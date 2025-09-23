@@ -69,10 +69,38 @@
             font-size: 1.2em;
             margin-top: 30px;
         }
+        
+        .music-button {
+            background: #8b4513;
+            color: #f4e8d0;
+            padding: 12px 25px;
+            border: 3px solid #654321;
+            cursor: pointer;
+            font-family: 'Garamond', 'Georgia', serif;
+            font-size: 1.1em;
+            border-radius: 5px;
+            display: block;
+            margin: 30px auto;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .music-button:hover {
+            background: #654321;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
     </style>
 </head>
 <body>
     <h1>⚔️ Welcome weary internet traveler. Please, stay a while! Rest your tired eyes ⚔️</h1>
+    
+    <button class="music-button" onclick="toggleMusic()">🎵 Play Tavern Music 🎵</button>
+    
+    <audio id="bg-music" loop>
+        <source src="swashbuckle.mp3" type="audio/mpeg">
+    </audio>
     
     <img id="bouncing-img" src="DSAK.jpg" alt="My photo">
     
@@ -83,33 +111,40 @@
     <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871">Clip Clop!</a> - An application to make thee sound as if thou art riding upon a noble steed. My role? Co-Founder & Chief Sound Engineer</p>
     
     <p><a href="https://www.iheardeadpeople.com/nietzsche">I Hear Dead People</a> - Playing the philosopher Nietzsche upon this podcast, giving voice to thoughts from beyond the grave</p>
-
     <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25">Amuse Bouche</a> - A conglomeration loose, improvisers tight</p>
-
+    
     <script>
         const img = document.getElementById('bouncing-img');
         let x = Math.random() * (window.innerWidth - 150);
         let y = Math.random() * 300;
         let dx = 2;
         let dy = 2;
-
+        
         function bounce() {
             const maxX = document.body.offsetWidth - img.offsetWidth;
             const maxY = document.body.offsetHeight - img.offsetHeight;
-
             x += dx;
             y += dy;
-
             if (x <= 0 || x >= maxX) dx = -dx;
             if (y <= 0 || y >= maxY) dy = -dy;
-
             img.style.left = x + 'px';
             img.style.top = y + 'px';
-
             requestAnimationFrame(bounce);
         }
-
+        
         bounce();
+        
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const button = document.querySelector('.music-button');
+            if (music.paused) {
+                music.play();
+                button.textContent = '🔇 Silence the Bard 🔇';
+            } else {
+                music.pause();
+                button.textContent = '🎵 Play Tavern Music 🎵';
+            }
+        }
     </script>
 </body>
 </html>
