@@ -42,7 +42,7 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
         
-        #bouncing-img {
+        .bouncing-img {
             max-width: 150px;
             border: 8px solid #8b4513;
             border-radius: 50%;
@@ -53,7 +53,7 @@
             transition: transform 0.3s;
         }
         
-        #bouncing-img:hover {
+        .bouncing-img:hover {
             transform: rotate(15deg) scale(1.1);
         }
         
@@ -130,7 +130,7 @@
         <source src="swashbuckle.mp3" type="audio/mpeg">
     </audio>
     
-    <img id="bouncing-img" src="DSAK.jpg" alt="Captain's portrait">
+    <img class="bouncing-img" src="DSAK.jpg" alt="Captain's portrait">
     
     <p class="intro">⚓ Ye've stumbled upon the website of Daniel Sakakini ⚓</p>
     
@@ -152,21 +152,55 @@
     </div>
     
     <script>
-        const img = document.getElementById('bouncing-img');
-        let x = Math.random() * (window.innerWidth - 150);
-        let y = Math.random() * 300;
-        let dx = 3;
-        let dy = 3;
+        // Array to store all bouncing images and their properties
+        const bouncingImages = [];
         
+        // Initialize first image
+        const firstImg = document.querySelector('.bouncing-img');
+        bouncingImages.push({
+            element: firstImg,
+            x: Math.random() * (window.innerWidth - 150),
+            y: Math.random() * 300,
+            dx: 3,
+            dy: 3
+        });
+        
+        // Function to create a new bouncing image
+        function addBouncingImage() {
+            const newImg = document.createElement('img');
+            newImg.src = 'DSAK.jpg';
+            newImg.alt = "Captain's portrait";
+            newImg.className = 'bouncing-img';
+            document.body.appendChild(newImg);
+            
+            bouncingImages.push({
+                element: newImg,
+                x: Math.random() * (window.innerWidth - 150),
+                y: Math.random() * 300,
+                dx: 3 + Math.random() * 2 - 1, // Slightly vary speed
+                dy: 3 + Math.random() * 2 - 1
+            });
+        }
+        
+        // Add new image every 10 seconds
+        setInterval(addBouncingImage, 10000);
+        
+        // Bounce animation for all images
         function bounce() {
-            const maxX = document.body.offsetWidth - img.offsetWidth;
-            const maxY = document.body.offsetHeight - img.offsetHeight;
-            x += dx;
-            y += dy;
-            if (x <= 0 || x >= maxX) dx = -dx;
-            if (y <= 0 || y >= maxY) dy = -dy;
-            img.style.left = x + 'px';
-            img.style.top = y + 'px';
+            bouncingImages.forEach(img => {
+                const maxX = document.body.offsetWidth - img.element.offsetWidth;
+                const maxY = document.body.offsetHeight - img.element.offsetHeight;
+                
+                img.x += img.dx;
+                img.y += img.dy;
+                
+                if (img.x <= 0 || img.x >= maxX) img.dx = -img.dx;
+                if (img.y <= 0 || img.y >= maxY) img.dy = -img.dy;
+                
+                img.element.style.left = img.x + 'px';
+                img.element.style.top = img.y + 'px';
+            });
+            
             requestAnimationFrame(bounce);
         }
         
