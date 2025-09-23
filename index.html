@@ -51,6 +51,7 @@
             cursor: pointer;
             transform: rotate(0deg);
             transition: transform 0.3s;
+            z-index: -1;
         }
         
         .bouncing-img:hover {
@@ -134,89 +135,4 @@
     
     <p class="intro">⚓ Ye've stumbled upon the website of Daniel Sakakini ⚓</p>
     
-    <h2>💀 What's he done? 💰</h2>
-
-    <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - A cursed contraption that makes ye sound like yer ridin' the finest steed in the land! My role? Cap'n & Chief Sound Engineer</p>
-
-    <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Givin' voice to the ghost of Nietzsche himself on this haunted podcast</p>
-
-    <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> - A ragtag crew of improvisers, sailin' the comedic seas!</p>
-    
-    <div class="ship-art">
-    _~
-    _~ )_)_~
-    )_))_))_)
-    _!__!__!_
-    \______t/
-  ~~~~~~~~~~~~~
-    </div>
-    
-    <script>
-        // Array to store all bouncing images and their properties
-        const bouncingImages = [];
-        
-        // Initialize first image
-        const firstImg = document.querySelector('.bouncing-img');
-        bouncingImages.push({
-            element: firstImg,
-            x: Math.random() * (window.innerWidth - 150),
-            y: Math.random() * 300,
-            dx: 3,
-            dy: 3
-        });
-        
-        // Function to create a new bouncing image
-        function addBouncingImage() {
-            const newImg = document.createElement('img');
-            newImg.src = 'DSAK.jpg';
-            newImg.alt = "Captain's portrait";
-            newImg.className = 'bouncing-img';
-            document.body.appendChild(newImg);
-            
-            bouncingImages.push({
-                element: newImg,
-                x: Math.random() * (window.innerWidth - 150),
-                y: Math.random() * 300,
-                dx: 3 + Math.random() * 2 - 1, // Slightly vary speed
-                dy: 3 + Math.random() * 2 - 1
-            });
-        }
-        
-        // Add new image every 10 seconds
-        setInterval(addBouncingImage, 10000);
-        
-        // Bounce animation for all images
-        function bounce() {
-            bouncingImages.forEach(img => {
-                const maxX = document.body.offsetWidth - img.element.offsetWidth;
-                const maxY = document.body.offsetHeight - img.element.offsetHeight;
-                
-                img.x += img.dx;
-                img.y += img.dy;
-                
-                if (img.x <= 0 || img.x >= maxX) img.dx = -img.dx;
-                if (img.y <= 0 || img.y >= maxY) img.dy = -img.dy;
-                
-                img.element.style.left = img.x + 'px';
-                img.element.style.top = img.y + 'px';
-            });
-            
-            requestAnimationFrame(bounce);
-        }
-        
-        bounce();
-        
-        function toggleMusic() {
-            const music = document.getElementById('bg-music');
-            const button = document.querySelector('.music-button');
-            if (music.paused) {
-                music.play();
-                button.textContent = '🔇 SILENCE THE SHANTY 🔇';
-            } else {
-                music.pause();
-                button.textContent = '🎵 Play Shanty Music 🎵';
-            }
-        }
-    </script>
-</body>
-</html>
+    <h2>💀 Wha
