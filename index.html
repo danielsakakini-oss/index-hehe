@@ -1,223 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Captain Daniel Sakakini - Scourge of the Seven Seas</title>
+    <title>Daniel Sakakini - Portfolio</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 40px;
-            font-family: 'Courier New', monospace;
-            background-color: #1a1a2e;
-            color: #f0e68c;
-            background-image: 
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0,0,0,.3) 2px,
-                    rgba(0,0,0,.3) 4px
-                );
-            position: relative;
-            min-height: 600px;
-            border: 5px solid #8b4513;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.3);
         }
         
         h1 {
-            font-family: 'Impact', 'Courier New', monospace;
-            font-size: 3em;
-            color: #ff4444;
-            text-align: center;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-            margin-bottom: 30px;
-            letter-spacing: 3px;
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
         }
         
         h2 {
-            font-family: 'Impact', 'Courier New', monospace;
-            color: #ffd700;
-            font-size: 2em;
-            margin-top: 40px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-        
-        .bouncing-img {
-            max-width: 150px;
-            border: 8px solid #8b4513;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(255,215,0,0.5);
-            position: absolute;
-            cursor: pointer;
-            transform: rotate(0deg);
-            transition: transform 0.3s;
-            z-index: -1;
-        }
-        
-        .bouncing-img:hover {
-            transform: rotate(15deg) scale(1.1);
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin: 2.5rem 0 1.5rem;
+            opacity: 0.9;
         }
         
         p {
-            font-size: 1.1em;
-            line-height: 1.8;
-            margin: 20px 0;
-            color: #e8d4a0;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 1rem 0;
+            opacity: 0.95;
         }
         
         a {
-            color: #ff6b6b;
+            color: #ffffff;
             text-decoration: none;
-            font-weight: bold;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            transition: border-color 0.2s;
         }
         
         a:hover {
-            color: #ffd700;
-            border-bottom: 2px solid #ffd700;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            border-bottom-color: #ffffff;
         }
         
         .intro {
-            text-align: center;
-            font-style: italic;
-            color: #ffd700;
-            font-size: 1.3em;
-            margin-top: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-        
-        .music-button {
-            background: #8b0000;
-            color: #ffd700;
-            padding: 15px 30px;
-            border: 3px solid #ffd700;
-            cursor: pointer;
-            font-family: 'Impact', 'Courier New', monospace;
-            font-size: 1.2em;
-            border-radius: 10px;
-            display: block;
-            margin: 30px auto;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(255,215,0,0.3);
-            transition: all 0.3s;
-            text-transform: uppercase;
-        }
-        
-        .music-button:hover {
-            background: #ff4444;
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(255,215,0,0.6);
-        }
-
-        .ship-art {
-            color: #8b4513;
-            text-align: center;
-            font-size: 1em;
-            line-height: 1.2;
-            margin: 40px 0;
-            white-space: pre;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: 1.1rem;
+            margin: 1rem 0 3rem;
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
-    <h1>🏴‍☠️ AHOY THERE 🏴‍☠️</h1>
-    
-    <button class="music-button" onclick="toggleMusic()">🎵 Play Shanty Music 🎵</button>
-    
-    <audio id="bg-music" loop>
-        <source src="swashbuckle.mp3" type="audio/mpeg">
-    </audio>
-    
-    <img class="bouncing-img" src="DSAK.jpg" alt="Captain's portrait">
-    
-    <p class="intro">⚓ Ye've stumbled upon the website of Daniel Sakakini ⚓</p>
-    
-    <h2>💀 What's he done? 💰</h2>
+    <div class="container">
+        <img class="profile-image" src="DSAK.jpg" alt="Daniel Sakakini">
+        
+        <h1>Daniel Sakakini</h1>
+        
+        <p class="intro">Sound Engineer & Creative</p>
+        
+        <h2>Projects</h2>
 
-    <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - A cursed contraption that makes ye sound like yer ridin' the finest steed in the land! My role? Cap'n & Chief Sound Engineer</p>
+        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — An app that makes you sound like you're riding a horse. Captain & Chief Sound Engineer.</p>
 
-    <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Givin' voice to the ghost of Nietzsche himself on this haunted podcast</p>
+        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — Voice of Nietzsche on this podcast series.</p>
 
-    <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> - A ragtag crew of improvisers, sailin' the comedic seas!</p>
-    
-    <div class="ship-art">
-    _~
-    _~ )_)_~
-    )_))_))_)
-    _!__!__!_
-    \______t/
-  ~~~~~~~~~~~~~
+        <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — Improvisation comedy troupe.</p>
     </div>
-    
-    <script>
-        // Array to store all bouncing images and their properties
-        const bouncingImages = [];
-        
-        // Initialize first image
-        const firstImg = document.querySelector('.bouncing-img');
-        bouncingImages.push({
-            element: firstImg,
-            x: Math.random() * (window.innerWidth - 150),
-            y: Math.random() * 300,
-            dx: 3,
-            dy: 3
-        });
-        
-        // Function to create a new bouncing image
-        function addBouncingImage() {
-            const newImg = document.createElement('img');
-            newImg.src = 'DSAK.jpg';
-            newImg.alt = "Captain's portrait";
-            newImg.className = 'bouncing-img';
-            document.body.appendChild(newImg);
-            
-            bouncingImages.push({
-                element: newImg,
-                x: Math.random() * (window.innerWidth - 150),
-                y: Math.random() * 300,
-                dx: 3 + Math.random() * 2 - 1, // Slightly vary speed
-                dy: 3 + Math.random() * 2 - 1
-            });
-        }
-        
-        // Add new image every 10 seconds
-        setInterval(addBouncingImage, 10000);
-        
-        // Bounce animation for all images
-        function bounce() {
-            bouncingImages.forEach(img => {
-                const maxX = document.body.offsetWidth - img.element.offsetWidth;
-                const maxY = document.body.offsetHeight - img.element.offsetHeight;
-                
-                img.x += img.dx;
-                img.y += img.dy;
-                
-                if (img.x <= 0 || img.x >= maxX) img.dx = -img.dx;
-                if (img.y <= 0 || img.y >= maxY) img.dy = -img.dy;
-                
-                img.element.style.left = img.x + 'px';
-                img.element.style.top = img.y + 'px';
-            });
-            
-            requestAnimationFrame(bounce);
-        }
-        
-        bounce();
-        
-        function toggleMusic() {
-            const music = document.getElementById('bg-music');
-            const button = document.querySelector('.music-button');
-            if (music.paused) {
-                music.play();
-                button.textContent = '🔇 SILENCE THE SHANTY 🔇';
-            } else {
-                music.pause();
-                button.textContent = '🎵 Play Shanty Music 🎵';
-            }
-        }
-    </script>
 </body>
 </html>
