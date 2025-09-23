@@ -146,4 +146,57 @@
     
     <h2>💀 What's he done? 💰</h2>
     
-    <p><a href="https://apps.apple.com/us/app/cli
+    <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871">Clip Clop!</a> - A cursed contraption that makes ye sound like yer ridin' the finest steed in the land! My role? Cap'n & Chief Sound Engineer</p>
+    
+    <p><a href="https://www.iheardeadpeople.com/nietzsche">I Hear Dead People</a> - Givin' voice to the ghost of Nietzsche himself on this haunted podcast</p>
+    
+    <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25">Amuse Bouche</a> - A ragtag crew of improvisers, sailin' the comedic seas!</p>
+    
+    <div class="ship-art">
+                              |    |    |
+                             )_)  )_)  )_)
+                            )___))___))___)\
+                           )____)____)_____)\\
+                         _____|____|____|____\\\__
+                ~~~~~~~~\                   /~~~~~~~~
+                  ~~~~~~~\               /~~~~~~~~~
+                    ~~~~~~~\         /~~~~~~~~~~
+                       ~~~~~~~~\  /~~~~~~~~~~~
+                          ~~~~~~~~~~~~~~~~~~~~~
+    </div>
+    
+    <script>
+        const img = document.getElementById('bouncing-img');
+        let x = Math.random() * (window.innerWidth - 150);
+        let y = Math.random() * 300;
+        let dx = 3;
+        let dy = 3;
+        
+        function bounce() {
+            const maxX = document.body.offsetWidth - img.offsetWidth;
+            const maxY = document.body.offsetHeight - img.offsetHeight;
+            x += dx;
+            y += dy;
+            if (x <= 0 || x >= maxX) dx = -dx;
+            if (y <= 0 || y >= maxY) dy = -dy;
+            img.style.left = x + 'px';
+            img.style.top = y + 'px';
+            requestAnimationFrame(bounce);
+        }
+        
+        bounce();
+        
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const button = document.querySelector('.music-button');
+            if (music.paused) {
+                music.play();
+                button.textContent = '🔇 SILENCE THE SHANTY 🔇';
+            } else {
+                music.pause();
+                button.textContent = '🎵 Play Shanty Music �🎵';
+            }
+        }
+    </script>
+</body>
+</html>
