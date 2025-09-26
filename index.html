@@ -96,15 +96,62 @@
             border-color: rgba(139, 120, 93, 0.5);
             transform: translateY(-1px);
         }
+        
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            background: rgba(244, 232, 208, 0.8);
+            border: 1px solid rgba(139, 120, 93, 0.4);
+            border-radius: 4px;
+            color: #3a2f24;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .music-control:hover {
+            background: rgba(232, 220, 192, 0.9);
+            border-color: rgba(139, 120, 93, 0.6);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
+    <audio id="backgroundMusic" autoplay loop>
+        <source src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/swashbuckle.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <button class="music-control" onclick="toggleMusic()">Stop Music</button>
+    
+    <script>
+        let isPlaying = true;
+        const audio = document.getElementById('backgroundMusic');
+        const button = document.querySelector('.music-control');
+        
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                button.textContent = 'Play Music';
+                isPlaying = false;
+            } else {
+                audio.play();
+                button.textContent = 'Stop Music';
+                isPlaying = true;
+            }
+        }
+    </script>
+    
     <div class="container">
         <h1>Daniel Sakakini</h1>
         
         <h2>Projects</h2>
         <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — Co-Founder and Chief Sound Engineer at Clip Clop! The first app that turns your boring ride into a trusty steed!</p>
-        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy discussion podcast</p>
+        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy podcast</p>
         <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — My improv team</p>
         <p><a href="https://www.substack.com/@danielsakakini?" target="_blank">Substack</a> — My random musings</p>
         
