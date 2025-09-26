@@ -43,7 +43,7 @@
         h2 {
             font-size: 1.68rem;
             font-weight: normal;
-            margin: 0.5rem 0 1.5rem;
+            margin: 2.5rem 0 1.5rem;
             color: #4a3c2a;
             font-style: italic;
             text-decoration: underline;
@@ -131,22 +131,22 @@
     </style>
 </head>
 <body>
-    <audio id="backgroundMusic" autoplay loop>
+    <audio id="backgroundMusic" loop>
         <source src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/swashbuckle.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
     
-    <button class="music-control" onclick="toggleMusic()">Stop Music</button>
+    <button class="music-control" onclick="toggleMusic()">Begin Music</button>
     
     <script>
-        let isPlaying = true;
+        let isPlaying = false;
         const audio = document.getElementById('backgroundMusic');
         const button = document.querySelector('.music-control');
         
         function toggleMusic() {
             if (isPlaying) {
                 audio.pause();
-                button.textContent = 'Play Music';
+                button.textContent = 'Begin Music';
                 isPlaying = false;
             } else {
                 audio.play();
