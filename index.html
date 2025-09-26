@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
     <title>Daniel Sakakini - Portfolio</title>
@@ -8,80 +9,157 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #ffffff;
-            color: #000000;
-            padding: 2rem;
+
+```
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #ffffff;
+        color: #000000;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .container {
+        max-width: 600px;
+        text-align: center;
+        z-index: 10;
+        position: relative;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 300;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+    
+    h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        margin: 2.5rem 0 1.5rem;
+    }
+    
+    p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 1rem 0;
+    }
+    
+    a {
+        color: #0000EE;
+        text-decoration: underline;
+    }
+    
+    a:hover {
+        color: #551A8B;
+    }
+    
+    .intro {
+        font-size: 1.1rem;
+        margin: 1rem 0 3rem;
+    }
+    
+    .social-links {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+    }
+    
+    .bouncing-face {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        z-index: 1;
+        opacity: 0.8;
+        border: 2px solid #0000EE;
+        animation: bounce 4s infinite ease-in-out;
+    }
+    
+    @keyframes bounce {
+        0% {
+            transform: translate(10vw, 10vh);
+        }
+        25% {
+            transform: translate(80vw, 20vh);
+        }
+        50% {
+            transform: translate(70vw, 70vh);
+        }
+        75% {
+            transform: translate(20vw, 80vh);
+        }
+        100% {
+            transform: translate(10vw, 10vh);
+        }
+    }
+    
+    /* Multiple bouncing faces for extra fun */
+    .bouncing-face:nth-child(2) {
+        animation-delay: -1s;
+        width: 45px;
+        height: 45px;
+        opacity: 0.6;
+    }
+    
+    .bouncing-face:nth-child(3) {
+        animation-delay: -2s;
+        width: 35px;
+        height: 35px;
+        opacity: 0.4;
+        animation-duration: 5s;
+    }
+    
+    @media (max-width: 768px) {
+        .bouncing-face {
+            width: 40px;
+            height: 40px;
         }
         
-        .container {
-            max-width: 600px;
-            text-align: center;
+        .bouncing-face:nth-child(2) {
+            width: 30px;
+            height: 30px;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
+        .bouncing-face:nth-child(3) {
+            width: 25px;
+            height: 25px;
         }
-        
-        h2 {
-            font-size: 1.2rem;
-            font-weight: 400;
-            margin: 2.5rem 0 1.5rem;
-        }
-        
-        p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin: 1rem 0;
-        }
-        
-        a {
-            color: #0000EE;
-            text-decoration: underline;
-        }
-        
-        a:hover {
-            color: #551A8B;
-        }
-        
-        .intro {
-            font-size: 1.1rem;
-            margin: 1rem 0 3rem;
-        }
-        
-        .social-links {
-            margin-top: 2rem;
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-    </style>
+    }
+</style>
+```
+
 </head>
 <body>
-    <div class="container">
-        <h1>Daniel Sakakini</h1>
-        
-        <h2>Projects</h2>
-        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — Co-Founder and Chief Sound Engineer at Clip Clop! The first app that turns your boring ride into a trusty steed!</p>
-        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy discussion podcast</p>
-        <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — My improv team</p>
-        <p><a href="https://www.substack.com/@danielsakakini?utm_source=user-menu" target="_blank">Substack</a> — My random musings</p>
-        
-        <div class="social-links">
-            <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-            <a href="https://www.instagram.com/d4nsak/?hl=en" target="_blank">Instagram</a>
-            <a href="mailto:danielsakakini@gmail.com">Email</a>
-        </div>
+    <!-- Bouncing faces -->
+    <img src="DSAK.jpg" alt="Daniel's bouncing face" class="bouncing-face">
+    <img src="DSAK.jpg" alt="Daniel's bouncing face" class="bouncing-face">
+    <img src="DSAK.jpg" alt="Daniel's bouncing face" class="bouncing-face">
+
+```
+<div class="container">
+    <h1>Daniel Sakakini</h1>
+    
+    <h2>Projects</h2>
+    <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — Co-Founder and Chief Sound Engineer at Clip Clop! The first app that turns your boring ride into a trusty steed!</p>
+    <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy discussion podcast</p>
+    <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — My improv team</p>
+    <p><a href="https://www.substack.com/@danielsakakini?utm_source=user-menu" target="_blank">Substack</a> — My random musings</p>
+    
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+        <a href="https://www.instagram.com/d4nsak/?hl=en" target="_blank">Instagram</a>
+        <a href="mailto:danielsakakini@gmail.com">Email</a>
     </div>
+</div>
+```
+
 </body>
 </html>
