@@ -96,9 +96,43 @@
             border-color: rgba(139, 120, 93, 0.5);
             transform: translateY(-1px);
         }
+        
+        .bouncing-dsak {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            animation: bounceAround 12s ease-in-out infinite;
+            z-index: 10;
+        }
+        
+        @keyframes bounceAround {
+            0% {
+                left: 10%;
+                top: 10%;
+            }
+            25% {
+                left: 90%;
+                top: 20%;
+            }
+            50% {
+                left: 80%;
+                top: 80%;
+            }
+            75% {
+                left: 20%;
+                top: 70%;
+            }
+            100% {
+                left: 10%;
+                top: 10%;
+            }
+        }
     </style>
 </head>
 <body>
+    <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/DSAK.jpg" alt="DSAK" class="bouncing-dsak">
+    
     <div class="container">
         <h1>Daniel Sakakini</h1>
         
@@ -106,6 +140,7 @@
         <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — Co-Founder and Chief Sound Engineer at Clip Clop! The first app that turns your boring ride into a trusty steed!</p>
         <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy discussion podcast</p>
         <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — My improv team</p>
+        <p><a href="https://www.substack.com/@danielsakakini?" target="_blank">Substack</a> — My random musings</p>
         
         <div class="social-links">
             <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
