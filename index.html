@@ -15,55 +15,88 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #ffffff;
-            color: #000000;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: url('https://raw.githubusercontent.com/danielsakakini/danielsakakini.github.io/main/scroll-background.png') center center/cover no-repeat;
+            background-attachment: fixed;
+            color: #3a2f24;
             padding: 2rem;
+            position: relative;
         }
         
         .container {
             max-width: 600px;
             text-align: center;
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
         }
         
         h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
+            font-size: 2.8rem;
+            font-weight: normal;
             margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(101, 85, 68, 0.1);
+            font-family: 'Georgia', serif;
         }
         
         h2 {
-            font-size: 1.2rem;
-            font-weight: 400;
+            font-size: 1.4rem;
+            font-weight: normal;
             margin: 2.5rem 0 1.5rem;
+            color: #4a3c2a;
+            font-style: italic;
+            text-decoration: underline;
+            text-decoration-color: rgba(139, 120, 93, 0.4);
         }
         
         p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin: 1rem 0;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin: 1.2rem 0;
+            color: #3a2f24;
         }
         
         a {
-            color: #0000EE;
+            color: #8B4513;
             text-decoration: underline;
+            text-decoration-color: rgba(139, 69, 19, 0.6);
+            transition: color 0.3s ease;
         }
         
         a:hover {
-            color: #551A8B;
+            color: #654321;
+            text-decoration-color: #654321;
         }
         
         .intro {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin: 1rem 0 3rem;
+            font-style: italic;
         }
         
         .social-links {
-            margin-top: 2rem;
+            margin-top: 3rem;
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 2.5rem;
+        }
+        
+        .social-links a {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(139, 120, 93, 0.3);
+            border-radius: 3px;
+            background: rgba(244, 232, 208, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background: rgba(232, 220, 192, 0.8);
+            border-color: rgba(139, 120, 93, 0.5);
+            transform: translateY(-1px);
         }
     </style>
 </head>
