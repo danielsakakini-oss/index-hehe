@@ -38,7 +38,7 @@
             z-index: 10;
             width: 80%;
             max-width: 1000px;
-            height: 68vh;
+            height: 72vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -53,6 +53,30 @@
             text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
                          -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
             white-space: nowrap;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+            
+            p {
+                font-size: 0.9rem;
+            }
+            
+            .social-links a {
+                font-size: 0.9rem;
+            }
+            
+            .content {
+                width: 90%;
+                top: 5vh;
+                height: 75vh;
+            }
         }
         
         h2 {
