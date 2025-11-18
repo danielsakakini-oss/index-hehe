@@ -24,36 +24,50 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(1.5);
-            max-width: none;
-            width: auto;
-            height: auto;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            max-height: 80vh;
             z-index: -1;
         }
         
         .content {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 10;
+            width: 80%;
+            max-width: 1000px;
+            text-align: center;
         }
         
         h1 {
-            font-size: 2rem;
+            font-size: 5rem;
             font-weight: 600;
-            margin-bottom: 2rem;
+            margin-bottom: 15rem;
             color: white;
             text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
                          -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            width: 100%;
+            white-space: nowrap;
         }
         
         h2 {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 1rem;
             color: white;
             text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
                          -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+        }
+        
+        .projects {
+            display: inline-block;
+            text-align: center;
         }
         
         p {
@@ -97,10 +111,12 @@
     <div class="content">
         <h1>Daniel Sakakini</h1>
         
-        <h2>Projects</h2>
-        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a></p>
-        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a></p>
-        <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a></p>
+        <div class="projects">
+            <h2>Projects</h2>
+            <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a></p>
+            <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a></p>
+            <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a></p>
+        </div>
         
         <div class="social-links">
             <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
