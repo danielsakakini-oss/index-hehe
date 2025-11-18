@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daniel Sakakini - Portfolio</title>
     <style>
         * {
@@ -15,159 +17,70 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: 'Palatino', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
-            background: url('https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/Scroll.jpg') center center/cover no-repeat;
-            background-attachment: fixed;
-            color: #3a2f24;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: white;
+            color: black;
             padding: 2rem;
-            position: relative;
+            line-height: 1.6;
         }
         
         .container {
             max-width: 600px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            padding: 2rem;
+            width: 100%;
         }
         
         h1 {
-            font-size: 3.36rem;
-            font-weight: normal;
-            margin-bottom: 0.5rem;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 2px rgba(101, 85, 68, 0.1);
-            font-family: 'Palatino', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 3rem;
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
         }
         
         h2 {
-            font-size: 1.68rem;
-            font-weight: normal;
-            margin: 0.5rem 0 1.5rem;
-            color: #4a3c2a;
-            font-style: italic;
-            text-decoration: underline;
-            text-decoration-color: rgba(139, 120, 93, 0.4);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
         }
         
         p {
-            font-size: 1.32rem;
-            line-height: 1.7;
-            margin: 1.2rem 0;
-            color: #3a2f24;
+            font-size: 1rem;
+            margin-bottom: 1rem;
         }
         
         a {
-            color: #8B4513;
+            color: black;
             text-decoration: underline;
-            text-decoration-color: rgba(139, 69, 19, 0.6);
-            transition: color 0.3s ease;
         }
         
         a:hover {
-            color: #654321;
-            text-decoration-color: #654321;
-        }
-        
-        .intro {
-            font-size: 1.44rem;
-            margin: 1rem 0 3rem;
-            font-style: italic;
+            opacity: 0.6;
         }
         
         .social-links {
-            margin-top: 3rem;
+            margin-top: 2rem;
             display: flex;
-            justify-content: center;
-            gap: 2.5rem;
-            position: relative;
-            z-index: 10;
+            gap: 1.5rem;
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
         }
         
         .social-links a {
-            font-size: 1.32rem;
-            padding: 0.5rem 1rem;
-            border: 1px solid rgba(139, 120, 93, 0.3);
-            border-radius: 3px;
-            background: rgba(244, 232, 208, 0.5);
-            transition: all 0.3s ease;
-        }
-        
-        .social-links a:hover {
-            background: rgba(232, 220, 192, 0.8);
-            border-color: rgba(139, 120, 93, 0.5);
-            transform: translateY(-1px);
-        }
-        
-        .music-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 8px 12px;
-            font-size: 0.9rem;
-            background: rgba(244, 232, 208, 0.8);
-            border: 1px solid rgba(139, 120, 93, 0.4);
-            border-radius: 4px;
-            color: #3a2f24;
-            cursor: pointer;
-            font-family: 'Palatino', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-        
-        .music-control:hover {
-            background: rgba(232, 220, 192, 0.9);
-            border-color: rgba(139, 120, 93, 0.6);
-            transform: translateY(-1px);
-        }
-        
-        .profile-image {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 2rem 0;
-            border: 3px solid rgba(139, 120, 93, 0.4);
-            box-shadow: 0 4px 12px rgba(101, 85, 68, 0.2);
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
-    <audio id="backgroundMusic" loop>
-        <source src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/swashbuckle.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-    
-    <button class="music-control" onclick="toggleMusic()">Begin Music</button>
-    
-    <script>
-        let isPlaying = false;
-        const audio = document.getElementById('backgroundMusic');
-        const button = document.querySelector('.music-control');
-        
-        function toggleMusic() {
-            if (isPlaying) {
-                audio.pause();
-                button.textContent = 'Begin Music';
-                isPlaying = false;
-            } else {
-                audio.play();
-                button.textContent = 'Stop Music';
-                isPlaying = true;
-            }
-        }
-    </script>
-    
     <div class="container">
         <h1>Daniel Sakakini</h1>
         
-        <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_7927.jpeg" alt="Daniel Sakakini" class="profile-image">
-        
         <h2>Projects</h2>
-        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a> — Co-Founder, Chief Sound Engineer, and the voice behind Clip Clop! The first app that turns your boring ride into a trusty steed!</p>
-        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> — I play Nietszche on this philosophy discussion podcast</p>
-        <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a> — My improv team</p>
-        <p><a href="https://www.substack.com/@danielsakakini?" target="_blank">Substack</a> — My random musings</p>
+        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop</a></p>
+        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a></p>
+        <p><a href="https://www.brooklyncc.com/fun-and-dumb-schedule/bouche-fad-25" target="_blank">Amuse Bouche</a></p>
         
         <div class="social-links">
             <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
