@@ -30,18 +30,20 @@
             z-index: -1;
         }
         
-        .content {
+        .projects {
             position: fixed;
             top: 5vh;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 2rem;
             z-index: 10;
-            width: 80%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
+            text-align: left;
+        }
+        
+        .shop-section {
+            position: fixed;
+            top: 5vh;
+            right: 2rem;
+            z-index: 10;
+            text-align: right;
         }
         
         @media (max-width: 768px) {
@@ -57,9 +59,14 @@
                 font-size: 1.4rem;
             }
             
-            .content {
-                width: 90%;
+            .projects {
                 top: 3vh;
+                left: 1rem;
+            }
+            
+            .shop-section {
+                top: 3vh;
+                right: 1rem;
             }
             
             .location-text {
@@ -73,11 +80,6 @@
             font-weight: 600;
             margin-bottom: 1rem;
             color: white;
-        }
-        
-        .projects {
-            display: inline-block;
-            text-align: center;
         }
         
         p {
@@ -95,11 +97,7 @@
             opacity: 0.7;
         }
         
-        .shop-link {
-            margin-top: 1.5rem;
-        }
-        
-        .shop-link a {
+        .shop-section a {
             font-size: 3rem;
             font-weight: 600;
         }
@@ -132,13 +130,14 @@
 <body>
     <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
     
-    <div class="content">
-        <div class="projects">
-            <h2>Projects</h2>
-            <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - App Store</p>
-            <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
-            <p class="shop-link"><a href="/shop.html">Shop</a></p>
-        </div>
+    <div class="projects">
+        <h2>Projects</h2>
+        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - App Store</p>
+        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
+    </div>
+    
+    <div class="shop-section">
+        <a href="/shop.html">Shop</a>
     </div>
     
     <div class="social-links">
