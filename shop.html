@@ -1,1 +1,177 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Daniel Sakakini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            font-family: 'Georgia', 'Baskerville', serif;
+            background: white;
+            color: black;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .center-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        
+        .content {
+            position: fixed;
+            top: 3vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 80%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+        }
+        
+        h1 {
+            font-size: 5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
+                         -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+            white-space: nowrap;
+            margin-bottom: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+            
+            p {
+                font-size: 0.9rem;
+            }
+            
+            .social-links a {
+                font-size: 1.4rem;
+            }
+            
+            .content {
+                width: 90%;
+                top: 3vh;
+            }
+            
+            .location-text {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
+                         -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+        }
+        
+        .shop-items {
+            display: inline-block;
+            text-align: center;
+        }
+        
+        p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
+                         -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+        }
+        
+        a {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        a:hover {
+            opacity: 0.7;
+        }
+        
+        .promo-code {
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .back-link {
+            margin-top: 2rem;
+        }
+        
+        .social-links {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3rem;
+            z-index: 10;
+        }
+        
+        .social-links a {
+            font-size: 2rem;
+            color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
+                         -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+        }
+        
+        .location-text {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 0.9rem;
+            color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black,
+                         -2px 0 0 black, 2px 0 0 black, 0 -2px 0 black, 0 2px 0 black;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
+    
+    <div class="content">
+        <h1>Shop</h1>
+        
+        <div class="shop-items">
+            <h2>Recommendations</h2>
+            <p><a href="https://luchos.com" target="_blank">luchos - instant energy, great fruit taste, easy to digest, compostable wrapper</a></p>
+            <p class="promo-code">Use code BADS10 for 10% off</p>
+            
+            <p class="back-link"><a href="/index.html">← Back to Home</a></p>
+        </div>
+    </div>
+    
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+        <a href="mailto:danielsakakini@gmail.com">Email</a>
+    </div>
+    
+    <div class="location-text">Palamos, Spain, 2024</div>
+</body>
+</html>
