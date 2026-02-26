@@ -1337,7 +1337,7 @@
         document.getElementById('editLocation').value = ev.location || '';
         document.getElementById('editNotes').value = ev.notes || '';
 
-        closeViewModal();
+        document.getElementById('viewModal').classList.remove('active');
         document.getElementById('editModal').classList.add('active');
     }
 
