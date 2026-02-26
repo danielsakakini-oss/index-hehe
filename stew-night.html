@@ -793,7 +793,30 @@
 
         <div class="modal-actions">
             <button class="btn-danger" id="deleteEventBtn" onclick="deleteEvent()" style="display:none; margin-right:auto;">Delete</button>
+            <button class="btn-primary" id="editEventBtn" onclick="openEditModal()" style="display:none;">Edit</button>
             <button class="btn-secondary" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ EDIT STEW NIGHT MODAL (Admin) ============ -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <h3>Edit Stew Night</h3>
+        <div class="divider"></div>
+        <label for="editDate">Date</label>
+        <input type="date" id="editDate">
+        <label for="editTitle">Title</label>
+        <input type="text" id="editTitle" placeholder="e.g. Beef Stew Night">
+        <label for="editTime">Time</label>
+        <input type="time" id="editTime">
+        <label for="editLocation">Location</label>
+        <input type="text" id="editLocation" placeholder="e.g. Danny's place">
+        <label for="editNotes">Notes</label>
+        <textarea id="editNotes" placeholder="e.g. Bring your appetite" style="width:100%; padding:0.5rem 0.7rem; margin-bottom:1rem; border:1px solid rgba(139,107,72,0.3); border-radius:2px; background:rgba(255,255,255,0.5); color:#3b2e1e; font-family:inherit; font-size:0.95rem; resize:vertical; min-height:60px;"></textarea>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveEditEvent()">Save</button>
         </div>
     </div>
 </div>
@@ -1233,6 +1256,8 @@
 
         document.getElementById('deleteEventBtn').style.display =
             currentRole === 'admin' ? 'inline-block' : 'none';
+        document.getElementById('editEventBtn').style.display =
+            currentRole === 'admin' ? 'inline-block' : 'none';
 
         updateCalendarLinks(ev);
 
@@ -1290,6 +1315,53 @@
                 alert('Failed to delete event: ' + err.message);
             });
     }
+
+    // ============ EDIT EVENT (Admin) ============
+    function openEditModal() {
+        var ev = null;
+        for (var i = 0; i < cachedEvents.length; i++) {
+            if (cachedEvents[i].id === viewingEventId) { ev = cachedEvents[i]; break; }
+        }
+        if (!ev) return;
+
+        document.getElementById('editDate').value = ev.date || '';
+        document.getElementById('editTitle').value = ev.title || '';
+        document.getElementById('editTime').value = ev.time || '';
+        document.getElementById('editLocation').value = ev.location || '';
+        document.getElementById('editNotes').value = ev.notes || '';
+
+        closeViewModal();
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    function saveEditEvent() {
+        var date = document.getElementById('editDate').value;
+        var title = document.getElementById('editTitle').value.trim();
+        var time = document.getElementById('editTime').value;
+        var location = document.getElementById('editLocation').value.trim();
+        var notes = document.getElementById('editNotes').value.trim();
+
+        if (!date || !title) return;
+
+        apiRequest('events/' + viewingEventId, 'PUT', {
+            date: date, title: title, time: time, location: location, notes: notes
+        })
+            .then(function() {
+                closeEditModal();
+                loadAndRenderCalendar();
+            })
+            .catch(function(err) {
+                alert('Failed to update event: ' + err.message);
+            });
+    }
+
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
 
     // ============ CALENDAR SYNC ============
     function buildCalendarData(ev) {
