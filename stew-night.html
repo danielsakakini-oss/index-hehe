@@ -571,6 +571,44 @@
             margin: 0.8rem auto;
         }
 
+        .calendar-sync {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-cal {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid rgba(139, 107, 72, 0.35);
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #5a4130;
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cal:hover {
+            background: #8b6b48;
+            color: #f5ede3;
+            border-color: #8b6b48;
+        }
+
+        .btn-cal svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
         /* ---- Responsive ---- */
         @media (max-width: 768px) {
             .top-bar {
@@ -722,6 +760,17 @@
             </div>
         </div>
 
+        <div class="calendar-sync" id="calendarSync">
+            <a id="gcalLink" class="btn-cal" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Google Calendar
+            </a>
+            <button id="icalBtn" class="btn-cal" onclick="downloadICS()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Apple / iCal
+            </button>
+        </div>
+
         <div style="margin-top:1.5rem;">
             <div class="divider"></div>
             <strong style="color:#5a4130; font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;">RSVPs (<span id="rsvpCount">0</span>)</strong>
@@ -737,34 +786,44 @@
 </div>
 
 <script>
-    const ADMIN_PASSWORD = 'Stewmaster';
-    const USER_PASSWORD = 'Dannystew';
+    // ============ API CLIENT ============
+    var API_BASE = '/api';
+    var currentPassword = null;
+    var cachedEvents = [];
 
-    function getData(key, fallback) {
+    function getSession() {
         try {
-            const val = localStorage.getItem('stewNight_' + key);
-            return val ? JSON.parse(val) : fallback;
-        } catch (e) { return fallback; }
+            var val = sessionStorage.getItem('stewNight_session');
+            return val ? JSON.parse(val) : null;
+        } catch (e) { return null; }
     }
 
-    function setData(key, value) {
-        localStorage.setItem('stewNight_' + key, JSON.stringify(value));
+    function saveSession(session) {
+        sessionStorage.setItem('stewNight_session', JSON.stringify(session));
     }
 
-    function getUsers() { return getData('users', []); }
-    function saveUsers(users) { setData('users', users); }
+    function apiRequest(endpoint, method, data) {
+        var opts = {
+            method: method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + currentPassword
+            }
+        };
+        if (data) opts.body = JSON.stringify(data);
+        return fetch(API_BASE + '/' + endpoint, opts).then(function(res) {
+            return res.json().then(function(json) {
+                if (!res.ok) throw new Error(json.error || 'Request failed');
+                return json;
+            });
+        });
+    }
 
-    function getEvents() { return getData('events', []); }
-    function saveEvents(events) { setData('events', events); }
-
-    function getSession() { return getData('session', null); }
-    function saveSession(session) { setData('session', session); }
-
-    let currentRole = null;
-    let currentUser = null;
-    let pendingRole = null; // tracks which role is registering
-    let viewYear, viewMonth;
-    let viewingEventId = null;
+    var currentRole = null;
+    var currentUser = null;
+    var pendingRole = null;
+    var viewYear, viewMonth;
+    var viewingEventId = null;
 
     // ============ INIT ============
     function initApp() {
@@ -774,12 +833,13 @@
             viewMonth = now.getMonth();
 
             var session = getSession();
-            if (session && session.user && session.user.firstName) {
+            if (session && session.user && session.user.firstName && session.password) {
                 currentRole = session.role;
                 currentUser = session.user;
+                currentPassword = session.password;
                 showApp();
             } else {
-                localStorage.removeItem('stewNight_session');
+                sessionStorage.removeItem('stewNight_session');
             }
 
             document.getElementById('passwordInput').addEventListener('keydown', function(e) {
@@ -801,22 +861,19 @@
 
     // ============ PASSWORD CHECK ============
     function checkPassword() {
-        const pw = document.getElementById('passwordInput').value;
-        const errEl = document.getElementById('passwordError');
+        var pw = document.getElementById('passwordInput').value;
+        var errEl = document.getElementById('passwordError');
 
-        if (pw === ADMIN_PASSWORD) {
-            pendingRole = 'admin';
+        currentPassword = pw;
+        apiRequest('auth', 'POST').then(function(result) {
+            pendingRole = result.role;
             document.getElementById('passwordBox').style.display = 'none';
             document.getElementById('nameBox').style.display = 'block';
             errEl.textContent = '';
-        } else if (pw === USER_PASSWORD) {
-            pendingRole = 'user';
-            document.getElementById('passwordBox').style.display = 'none';
-            document.getElementById('nameBox').style.display = 'block';
-            errEl.textContent = '';
-        } else {
+        }).catch(function() {
+            currentPassword = null;
             errEl.textContent = 'Incorrect password. Try again.';
-        }
+        });
     }
 
     // ============ USER REGISTRATION ============
@@ -831,62 +888,59 @@
     }
 
     function registerUser() {
-        const first = document.getElementById('regFirst').value.trim();
-        const last = document.getElementById('regLast').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
-        const errEl = document.getElementById('registerError');
+        var first = document.getElementById('regFirst').value.trim();
+        var last = document.getElementById('regLast').value.trim();
+        var email = document.getElementById('regEmail').value.trim();
+        var errEl = document.getElementById('registerError');
 
         if (!first || !last || !email) {
             errEl.textContent = 'Please fill in all fields.';
             return;
         }
 
-        const users = getUsers();
-        if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-            errEl.textContent = 'An account with this email already exists. Sign in instead.';
-            return;
-        }
-
-        const role = pendingRole || 'user';
-        const user = {
-            id: role === 'admin' ? 'admin_' + Date.now() : 'user_' + Date.now(),
-            firstName: first,
-            lastName: last,
-            email: email
-        };
-        users.push(user);
-        saveUsers(users);
-
-        currentRole = role;
-        currentUser = user;
-        saveSession({ role: role, user: user });
-        pendingRole = null;
-        showApp();
+        var user = { firstName: first, lastName: last, email: email };
+        apiRequest('users', 'POST', user).then(function(savedUser) {
+            currentRole = pendingRole || 'user';
+            currentUser = savedUser;
+            saveSession({ role: currentRole, user: savedUser, password: currentPassword });
+            pendingRole = null;
+            showApp();
+        }).catch(function(err) {
+            errEl.textContent = err.message === 'Email already registered'
+                ? 'An account with this email already exists. Sign in instead.'
+                : err.message;
+        });
     }
 
     function loginUser() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const errEl = document.getElementById('loginError');
+        var email = document.getElementById('loginEmail').value.trim();
+        var errEl = document.getElementById('loginError');
 
         if (!email) {
             errEl.textContent = 'Please enter your email.';
             return;
         }
 
-        const users = getUsers();
-        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-        if (!user) {
-            errEl.textContent = 'No account found with this email. Create one first.';
-            return;
-        }
-
-        // Determine role: check if this user was registered as admin
-        // We store the role in the session, so look for previous sessions or use the pending role
-        currentRole = pendingRole || 'user';
-        currentUser = user;
-        saveSession({ role: currentRole, user: user });
-        pendingRole = null;
-        showApp();
+        apiRequest('users', 'GET').then(function(users) {
+            var user = null;
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].email.toLowerCase() === email.toLowerCase()) {
+                    user = users[i];
+                    break;
+                }
+            }
+            if (!user) {
+                errEl.textContent = 'No account found with this email. Create one first.';
+                return;
+            }
+            currentRole = pendingRole || 'user';
+            currentUser = user;
+            saveSession({ role: currentRole, user: user, password: currentPassword });
+            pendingRole = null;
+            showApp();
+        }).catch(function(err) {
+            errEl.textContent = 'Could not connect to server. Please try again.';
+        });
     }
 
     // ============ APP ============
@@ -894,7 +948,7 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
 
-        const displayName = (currentUser && currentUser.firstName)
+        var displayName = (currentUser && currentUser.firstName)
             ? currentUser.firstName + ' ' + currentUser.lastName
             : 'User';
         document.getElementById('currentUserDisplay').textContent = displayName;
@@ -902,14 +956,26 @@
 
         document.getElementById('addStewBtn').style.display = currentRole === 'admin' ? 'block' : 'none';
 
-        renderCalendar();
+        loadAndRenderCalendar();
+    }
+
+    function loadAndRenderCalendar() {
+        apiRequest('events', 'GET').then(function(events) {
+            cachedEvents = events;
+            renderCalendar();
+        }).catch(function(err) {
+            console.error('Failed to load events:', err);
+            renderCalendar();
+        });
     }
 
     function logout() {
-        localStorage.removeItem('stewNight_session');
+        sessionStorage.removeItem('stewNight_session');
         currentRole = null;
         currentUser = null;
+        currentPassword = null;
         pendingRole = null;
+        cachedEvents = [];
 
         document.getElementById('passwordBox').style.display = 'block';
         document.getElementById('nameBox').style.display = 'none';
@@ -925,17 +991,17 @@
     }
 
     // ============ CALENDAR ============
-    const MONTH_NAMES = [
+    var MONTH_NAMES = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     function changeMonth(delta) {
         viewMonth += delta;
         if (viewMonth < 0) { viewMonth = 11; viewYear--; }
         if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-        renderCalendar();
+        loadAndRenderCalendar();
     }
 
     function renderCalendar() {
@@ -957,7 +1023,7 @@
             var firstDay = new Date(viewYear, viewMonth, 1).getDay();
             var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
             var today = new Date();
-            var events = getEvents();
+            var events = cachedEvents;
 
             for (var i = 0; i < firstDay; i++) {
                 var emptyCell = document.createElement('div');
@@ -1019,54 +1085,56 @@
     }
 
     function addStewNight() {
-        const date = document.getElementById('stewDate').value;
-        const title = document.getElementById('stewTitle').value.trim();
-        const time = document.getElementById('stewTime').value;
+        var date = document.getElementById('stewDate').value;
+        var title = document.getElementById('stewTitle').value.trim();
+        var time = document.getElementById('stewTime').value;
 
         if (!date || !title) return;
 
-        const events = getEvents();
-        events.push({
-            id: 'evt_' + Date.now(),
-            date: date,
-            title: title,
-            time: time,
-            rsvps: []
-        });
-        saveEvents(events);
-        closeAddModal();
-        renderCalendar();
+        apiRequest('events', 'POST', { date: date, title: title, time: time })
+            .then(function() {
+                closeAddModal();
+                loadAndRenderCalendar();
+            })
+            .catch(function(err) {
+                alert('Failed to add event: ' + err.message);
+            });
     }
 
     // ============ VIEW EVENT / RSVP ============
     function openViewModal(eventId) {
         viewingEventId = eventId;
-        const events = getEvents();
-        const ev = events.find(e => e.id === eventId);
+        var ev = null;
+        for (var i = 0; i < cachedEvents.length; i++) {
+            if (cachedEvents[i].id === eventId) { ev = cachedEvents[i]; break; }
+        }
         if (!ev) return;
 
         document.getElementById('viewTitle').textContent = ev.title;
 
-        const [y, m, d] = ev.date.split('-');
-        const dateObj = new Date(y, m - 1, d);
+        var parts = ev.date.split('-');
+        var dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
         document.getElementById('viewDate').textContent = dateObj.toLocaleDateString('en-US', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
         if (ev.time) {
-            const [h, min] = ev.time.split(':');
-            const hour = parseInt(h);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            const h12 = hour % 12 || 12;
-            document.getElementById('viewTime').textContent = h12 + ':' + min + ' ' + ampm;
+            var timeParts = ev.time.split(':');
+            var hour = parseInt(timeParts[0]);
+            var ampm = hour >= 12 ? 'PM' : 'AM';
+            var h12 = hour % 12 || 12;
+            document.getElementById('viewTime').textContent = h12 + ':' + timeParts[1] + ' ' + ampm;
         } else {
             document.getElementById('viewTime').textContent = '';
         }
 
-        const rsvps = ev.rsvps || [];
-        const myRsvp = rsvps.find(r => r.userId === currentUser.id);
+        var rsvps = ev.rsvps || [];
+        var myRsvp = null;
+        for (var ri = 0; ri < rsvps.length; ri++) {
+            if (rsvps[ri].userId === currentUser.id) { myRsvp = rsvps[ri]; break; }
+        }
 
-        const statusEl = document.getElementById('rsvpMyStatus');
+        var statusEl = document.getElementById('rsvpMyStatus');
         if (myRsvp) {
             statusEl.innerHTML = '<span class="rsvp-status attending">You are attending!</span>';
             document.getElementById('rsvpYesBtn').style.display = 'none';
@@ -1078,23 +1146,25 @@
         }
 
         document.getElementById('rsvpCount').textContent = rsvps.length;
-        const listEl = document.getElementById('rsvpList');
+        var listEl = document.getElementById('rsvpList');
         listEl.innerHTML = '';
-        const noRsvpEl = document.getElementById('noRsvps');
+        var noRsvpEl = document.getElementById('noRsvps');
 
         if (rsvps.length === 0) {
             noRsvpEl.style.display = 'block';
         } else {
             noRsvpEl.style.display = 'none';
-            rsvps.forEach(r => {
-                const li = document.createElement('li');
-                li.textContent = r.name;
-                listEl.appendChild(li);
-            });
+            for (var li = 0; li < rsvps.length; li++) {
+                var liEl = document.createElement('li');
+                liEl.textContent = rsvps[li].name;
+                listEl.appendChild(liEl);
+            }
         }
 
         document.getElementById('deleteEventBtn').style.display =
             currentRole === 'admin' ? 'inline-block' : 'none';
+
+        updateCalendarLinks(ev);
 
         document.getElementById('viewModal').classList.add('active');
     }
@@ -1105,33 +1175,129 @@
     }
 
     function rsvpToEvent(action) {
-        const events = getEvents();
-        const ev = events.find(e => e.id === viewingEventId);
+        var ev = null;
+        for (var i = 0; i < cachedEvents.length; i++) {
+            if (cachedEvents[i].id === viewingEventId) { ev = cachedEvents[i]; break; }
+        }
         if (!ev) return;
 
-        if (!ev.rsvps) ev.rsvps = [];
+        var rsvps = ev.rsvps ? ev.rsvps.slice() : [];
 
         if (action === 'yes') {
-            if (!ev.rsvps.find(r => r.userId === currentUser.id)) {
-                const name = currentUser.firstName + ' ' + currentUser.lastName;
-                ev.rsvps.push({ userId: currentUser.id, name: name });
+            var alreadyRsvpd = false;
+            for (var r = 0; r < rsvps.length; r++) {
+                if (rsvps[r].userId === currentUser.id) { alreadyRsvpd = true; break; }
+            }
+            if (!alreadyRsvpd) {
+                var name = currentUser.firstName + ' ' + currentUser.lastName;
+                rsvps.push({ userId: currentUser.id, name: name });
             }
         } else {
-            ev.rsvps = ev.rsvps.filter(r => r.userId !== currentUser.id);
+            var filtered = [];
+            for (var f = 0; f < rsvps.length; f++) {
+                if (rsvps[f].userId !== currentUser.id) filtered.push(rsvps[f]);
+            }
+            rsvps = filtered;
         }
 
-        saveEvents(events);
-        renderCalendar();
-        openViewModal(viewingEventId);
+        apiRequest('events/' + viewingEventId, 'PUT', { rsvps: rsvps })
+            .then(function() {
+                return apiRequest('events', 'GET');
+            })
+            .then(function(events) {
+                cachedEvents = events;
+                renderCalendar();
+                openViewModal(viewingEventId);
+            })
+            .catch(function(err) {
+                alert('Failed to update RSVP: ' + err.message);
+            });
     }
 
     function deleteEvent() {
         if (!confirm('Delete this Stew Night?')) return;
-        let events = getEvents();
-        events = events.filter(e => e.id !== viewingEventId);
-        saveEvents(events);
-        closeViewModal();
-        renderCalendar();
+
+        apiRequest('events/' + viewingEventId, 'DELETE')
+            .then(function() {
+                closeViewModal();
+                loadAndRenderCalendar();
+            })
+            .catch(function(err) {
+                alert('Failed to delete event: ' + err.message);
+            });
+    }
+
+    // ============ CALENDAR SYNC ============
+    function buildCalendarData(ev) {
+        var parts = ev.date.split('-');
+        var year = parts[0];
+        var month = parts[1];
+        var day = parts[2];
+
+        var startHour = '19';
+        var startMin = '00';
+        if (ev.time) {
+            var timeParts = ev.time.split(':');
+            startHour = timeParts[0];
+            startMin = timeParts[1];
+        }
+
+        var endH = parseInt(startHour) + 2;
+        var endHour = String(endH).padStart(2, '0');
+
+        var startStr = year + month + day + 'T' + startHour + startMin + '00';
+        var endStr = year + month + day + 'T' + endHour + startMin + '00';
+
+        return { startStr: startStr, endStr: endStr };
+    }
+
+    function updateCalendarLinks(ev) {
+        var cal = buildCalendarData(ev);
+        var title = encodeURIComponent(ev.title);
+        var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+            + '&text=' + title
+            + '&dates=' + cal.startStr + '/' + cal.endStr;
+
+        document.getElementById('gcalLink').href = gcalUrl;
+    }
+
+    function downloadICS() {
+        var ev = null;
+        for (var i = 0; i < cachedEvents.length; i++) {
+            if (cachedEvents[i].id === viewingEventId) { ev = cachedEvents[i]; break; }
+        }
+        if (!ev) return;
+
+        var cal = buildCalendarData(ev);
+        var now = new Date();
+        var stamp = now.getFullYear()
+            + String(now.getMonth() + 1).padStart(2, '0')
+            + String(now.getDate()).padStart(2, '0') + 'T'
+            + String(now.getHours()).padStart(2, '0')
+            + String(now.getMinutes()).padStart(2, '0')
+            + String(now.getSeconds()).padStart(2, '0');
+
+        var ics = 'BEGIN:VCALENDAR\r\n'
+            + 'VERSION:2.0\r\n'
+            + 'PRODID:-//Stew Night//EN\r\n'
+            + 'BEGIN:VEVENT\r\n'
+            + 'UID:' + ev.id + '@stewnight\r\n'
+            + 'DTSTAMP:' + stamp + '\r\n'
+            + 'DTSTART:' + cal.startStr + '\r\n'
+            + 'DTEND:' + cal.endStr + '\r\n'
+            + 'SUMMARY:' + ev.title + '\r\n'
+            + 'END:VEVENT\r\n'
+            + 'END:VCALENDAR';
+
+        var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = ev.title.replace(/[^a-zA-Z0-9]/g, '_') + '.ics';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     document.getElementById('addModal').addEventListener('click', function(e) {
