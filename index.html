@@ -214,6 +214,28 @@
             position: relative;
         }
 
+        .stew-night-link {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 20;
+        }
+
+        .stew-night-link a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(245, 237, 227, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .stew-night-link a:hover {
+            color: rgba(245, 237, 227, 1);
+        }
+
         @media (max-width: 768px) {
             .content-wrapper {
                 padding: 2rem 1.2rem;
@@ -244,6 +266,15 @@
                 font-size: 0.6rem;
                 right: 1rem;
                 bottom: 1rem;
+            }
+
+            .stew-night-link {
+                top: 1rem;
+                right: 1rem;
+            }
+
+            .stew-night-link a {
+                font-size: 0.6rem;
             }
         }
 
@@ -288,6 +319,10 @@
                 <a href="mailto:danielsakakini@gmail.com">Email</a>
             </div>
         </div>
+    </div>
+
+    <div class="stew-night-link">
+        <a href="stew-night.html">Stew Night</a>
     </div>
 
     <div class="location-text">Palamos, Spain, 2024</div>
