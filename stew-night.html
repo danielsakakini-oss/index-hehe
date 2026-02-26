@@ -738,6 +738,10 @@
         <input type="text" id="stewTitle" placeholder="e.g. Beef Stew Night" value="Stew Night">
         <label for="stewTime">Time</label>
         <input type="time" id="stewTime" value="19:00">
+        <label for="stewLocation">Location</label>
+        <input type="text" id="stewLocation" placeholder="e.g. Danny's place">
+        <label for="stewNotes">Notes</label>
+        <textarea id="stewNotes" placeholder="e.g. Bring your appetite" style="width:100%; padding:0.5rem 0.7rem; margin-bottom:1rem; border:1px solid rgba(139,107,72,0.3); border-radius:2px; background:rgba(255,255,255,0.5); color:#3b2e1e; font-family:inherit; font-size:0.95rem; resize:vertical; min-height:60px;"></textarea>
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
             <button class="btn-primary" onclick="addStewNight()">Add</button>
@@ -750,7 +754,9 @@
     <div class="modal">
         <h3 id="viewTitle"></h3>
         <p style="color:#8b6b48; margin-bottom:0.3rem; font-style:italic;" id="viewDate"></p>
-        <p style="color:#8b6b48; margin-bottom:1rem; font-style:italic;" id="viewTime"></p>
+        <p style="color:#8b6b48; margin-bottom:0.3rem; font-style:italic;" id="viewTime"></p>
+        <p style="color:#5a4130; margin-bottom:0.3rem;" id="viewLocation"></p>
+        <p style="color:#5a4130; margin-bottom:1rem; font-size:0.9rem; white-space:pre-wrap;" id="viewNotes"></p>
 
         <div id="rsvpSection">
             <div id="rsvpMyStatus"></div>
@@ -1090,6 +1096,8 @@
         document.getElementById('stewDate').value = '';
         document.getElementById('stewTitle').value = 'Stew Night';
         document.getElementById('stewTime').value = '19:00';
+        document.getElementById('stewLocation').value = '';
+        document.getElementById('stewNotes').value = '';
         document.getElementById('addModal').classList.add('active');
     }
 
@@ -1101,10 +1109,12 @@
         var date = document.getElementById('stewDate').value;
         var title = document.getElementById('stewTitle').value.trim();
         var time = document.getElementById('stewTime').value;
+        var location = document.getElementById('stewLocation').value.trim();
+        var notes = document.getElementById('stewNotes').value.trim();
 
         if (!date || !title) return;
 
-        apiRequest('events', 'POST', { date: date, title: title, time: time })
+        apiRequest('events', 'POST', { date: date, title: title, time: time, location: location, notes: notes })
             .then(function() {
                 closeAddModal();
                 loadAndRenderCalendar();
@@ -1139,6 +1149,22 @@
             document.getElementById('viewTime').textContent = h12 + ':' + timeParts[1] + ' ' + ampm;
         } else {
             document.getElementById('viewTime').textContent = '';
+        }
+
+        var locationEl = document.getElementById('viewLocation');
+        if (ev.location) {
+            locationEl.textContent = ev.location;
+            locationEl.style.display = 'block';
+        } else {
+            locationEl.style.display = 'none';
+        }
+
+        var notesEl = document.getElementById('viewNotes');
+        if (ev.notes) {
+            notesEl.textContent = ev.notes;
+            notesEl.style.display = 'block';
+        } else {
+            notesEl.style.display = 'none';
         }
 
         var rsvps = ev.rsvps || [];
@@ -1295,6 +1321,8 @@
         var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
             + '&text=' + title
             + '&dates=' + cal.startStr + '/' + cal.endStr;
+        if (ev.location) gcalUrl += '&location=' + encodeURIComponent(ev.location);
+        if (ev.notes) gcalUrl += '&details=' + encodeURIComponent(ev.notes);
 
         document.getElementById('gcalLink').href = gcalUrl;
     }
@@ -1324,6 +1352,8 @@
             + 'DTSTART:' + cal.startStr + '\r\n'
             + 'DTEND:' + cal.endStr + '\r\n'
             + 'SUMMARY:' + ev.title + '\r\n'
+            + (ev.location ? 'LOCATION:' + ev.location + '\r\n' : '')
+            + (ev.notes ? 'DESCRIPTION:' + ev.notes.replace(/\n/g, '\\n') + '\r\n' : '')
             + 'END:VEVENT\r\n'
             + 'END:VCALENDAR';
 
