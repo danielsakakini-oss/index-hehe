@@ -106,6 +106,30 @@
             color: white;
         }
         
+        .stew-night-link {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10;
+        }
+
+        .stew-night-link a {
+            font-size: 2rem;
+            color: white;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .stew-night-link {
+                top: 1.5rem;
+                right: 1rem;
+            }
+
+            .stew-night-link a {
+                font-size: 1.4rem;
+            }
+        }
+
         .location-text {
             position: fixed;
             bottom: 1rem;
@@ -125,6 +149,10 @@
         <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
     </div>
     
+    <div class="stew-night-link">
+        <a href="stew-night.html">Stew Night</a>
+    </div>
+
     <div class="social-links">
         <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
         <a href="mailto:danielsakakini@gmail.com">Email</a>
