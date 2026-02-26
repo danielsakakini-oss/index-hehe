@@ -189,8 +189,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            background: rgba(245, 237, 227, 0.95);
+            background: rgba(245, 237, 227, 0.85);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(139, 107, 72, 0.2);
         }
 
@@ -269,14 +270,20 @@
 
         /* ---- Calendar ---- */
         .calendar-wrapper {
-            background: #f5ede3;
-            min-height: calc(100vh - 60px);
             padding: 2rem 1rem;
+            min-height: calc(100vh - 60px);
         }
 
         .calendar-container {
             max-width: 900px;
             margin: 0 auto;
+            background: #f5ede3;
+            border: 1px solid rgba(139, 107, 72, 0.25);
+            border-radius: 2px;
+            padding: 2rem;
+            box-shadow:
+                0 8px 32px rgba(59, 46, 30, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
 
         .calendar-header {
