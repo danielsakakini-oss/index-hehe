@@ -763,6 +763,7 @@
             <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <button class="btn-primary" id="rsvpGoingBtn" onclick="rsvpToEvent('going')">Going</button>
                 <button class="btn-secondary" id="rsvpNotGoingBtn" onclick="rsvpToEvent('not_going')">Not Going</button>
+                <button class="btn-secondary" id="rsvpRemoveBtn" onclick="rsvpToEvent('remove')" style="display:none;">Remove RSVP</button>
             </div>
         </div>
 
@@ -1199,19 +1200,23 @@
         var statusEl = document.getElementById('rsvpMyStatus');
         var goingBtn = document.getElementById('rsvpGoingBtn');
         var notGoingBtn = document.getElementById('rsvpNotGoingBtn');
+        var removeBtn = document.getElementById('rsvpRemoveBtn');
 
         if (myRsvp && myRsvp.status === 'going') {
             statusEl.innerHTML = '<span class="rsvp-status attending">You\'re going!</span>';
             goingBtn.style.display = 'none';
             notGoingBtn.style.display = 'inline-block';
+            removeBtn.style.display = 'inline-block';
         } else if (myRsvp && myRsvp.status === 'not_going') {
             statusEl.innerHTML = '<span class="rsvp-status not-attending">You\'re not going</span>';
             goingBtn.style.display = 'inline-block';
             notGoingBtn.style.display = 'none';
+            removeBtn.style.display = 'inline-block';
         } else {
             statusEl.innerHTML = '<span class="rsvp-status not-attending">You have not RSVP\'d</span>';
             goingBtn.style.display = 'inline-block';
             notGoingBtn.style.display = 'inline-block';
+            removeBtn.style.display = 'none';
         }
 
         var going = [];
@@ -1286,8 +1291,10 @@
         }
         rsvps = filtered;
 
-        // Add new RSVP with status
-        rsvps.push({ userId: currentUser.id, name: name, status: action });
+        // Add new RSVP with status (unless removing)
+        if (action !== 'remove') {
+            rsvps.push({ userId: currentUser.id, name: name, status: action });
+        }
 
         apiRequest('events/' + viewingEventId, 'PUT', { rsvps: rsvps })
             .then(function() {
