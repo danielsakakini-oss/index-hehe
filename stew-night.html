@@ -738,6 +738,10 @@
         <input type="text" id="stewTitle" placeholder="e.g. Beef Stew Night" value="Stew Night">
         <label for="stewTime">Time</label>
         <input type="time" id="stewTime" value="19:00">
+        <label for="stewLocation">Location</label>
+        <input type="text" id="stewLocation" placeholder="e.g. Danny's place">
+        <label for="stewNotes">Notes</label>
+        <textarea id="stewNotes" placeholder="e.g. Bring your appetite" style="width:100%; padding:0.5rem 0.7rem; margin-bottom:1rem; border:1px solid rgba(139,107,72,0.3); border-radius:2px; background:rgba(255,255,255,0.5); color:#3b2e1e; font-family:inherit; font-size:0.95rem; resize:vertical; min-height:60px;"></textarea>
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
             <button class="btn-primary" onclick="addStewNight()">Add</button>
@@ -750,13 +754,15 @@
     <div class="modal">
         <h3 id="viewTitle"></h3>
         <p style="color:#8b6b48; margin-bottom:0.3rem; font-style:italic;" id="viewDate"></p>
-        <p style="color:#8b6b48; margin-bottom:1rem; font-style:italic;" id="viewTime"></p>
+        <p style="color:#8b6b48; margin-bottom:0.3rem; font-style:italic;" id="viewTime"></p>
+        <p style="color:#5a4130; margin-bottom:0.3rem;" id="viewLocation"></p>
+        <p style="color:#5a4130; margin-bottom:1rem; font-size:0.9rem; white-space:pre-wrap;" id="viewNotes"></p>
 
         <div id="rsvpSection">
             <div id="rsvpMyStatus"></div>
             <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button class="btn-primary" id="rsvpYesBtn" onclick="rsvpToEvent('yes')">RSVP - I'm coming!</button>
-                <button class="btn-secondary" id="rsvpNoBtn" onclick="rsvpToEvent('no')">Cancel RSVP</button>
+                <button class="btn-primary" id="rsvpGoingBtn" onclick="rsvpToEvent('going')">Going</button>
+                <button class="btn-secondary" id="rsvpNotGoingBtn" onclick="rsvpToEvent('not_going')">Not Going</button>
             </div>
         </div>
 
@@ -773,9 +779,16 @@
 
         <div style="margin-top:1.5rem;">
             <div class="divider"></div>
-            <strong style="color:#5a4130; font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;">RSVPs (<span id="rsvpCount">0</span>)</strong>
-            <ul class="rsvp-list" id="rsvpList"></ul>
-            <p id="noRsvps" style="color:#8b6b48; font-size:0.85rem; margin-top:0.5rem; font-style:italic;">No RSVPs yet</p>
+            <strong style="color:#5a7a3a; font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;">Going (<span id="goingCount">0</span>)</strong>
+            <ul class="rsvp-list" id="goingList"></ul>
+            <p id="noGoing" style="color:#8b6b48; font-size:0.85rem; margin-top:0.5rem; font-style:italic;">No one yet</p>
+        </div>
+
+        <div style="margin-top:1rem;">
+            <div class="divider"></div>
+            <strong style="color:#a0522d; font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;">Not Going (<span id="notGoingCount">0</span>)</strong>
+            <ul class="rsvp-list" id="notGoingList"></ul>
+            <p id="noNotGoing" style="color:#8b6b48; font-size:0.85rem; margin-top:0.5rem; font-style:italic;">No one yet</p>
         </div>
 
         <div class="modal-actions">
@@ -1058,8 +1071,14 @@
                     (function(ev) {
                         var evEl = document.createElement('div');
                         evEl.className = 'stew-event';
+                        var goingCount = 0;
+                        if (ev.rsvps) {
+                            for (var gc = 0; gc < ev.rsvps.length; gc++) {
+                                if (ev.rsvps[gc].status !== 'not_going') goingCount++;
+                            }
+                        }
                         evEl.innerHTML = ev.title +
-                            '<span class="rsvp-count">' + (ev.rsvps ? ev.rsvps.length : 0) + ' RSVP(s)</span>';
+                            '<span class="rsvp-count">' + goingCount + ' going</span>';
                         evEl.onclick = function() { openViewModal(ev.id); };
                         el.appendChild(evEl);
                     })(dayEvents[evi]);
@@ -1077,6 +1096,8 @@
         document.getElementById('stewDate').value = '';
         document.getElementById('stewTitle').value = 'Stew Night';
         document.getElementById('stewTime').value = '19:00';
+        document.getElementById('stewLocation').value = '';
+        document.getElementById('stewNotes').value = '';
         document.getElementById('addModal').classList.add('active');
     }
 
@@ -1088,10 +1109,12 @@
         var date = document.getElementById('stewDate').value;
         var title = document.getElementById('stewTitle').value.trim();
         var time = document.getElementById('stewTime').value;
+        var location = document.getElementById('stewLocation').value.trim();
+        var notes = document.getElementById('stewNotes').value.trim();
 
         if (!date || !title) return;
 
-        apiRequest('events', 'POST', { date: date, title: title, time: time })
+        apiRequest('events', 'POST', { date: date, title: title, time: time, location: location, notes: notes })
             .then(function() {
                 closeAddModal();
                 loadAndRenderCalendar();
@@ -1128,6 +1151,22 @@
             document.getElementById('viewTime').textContent = '';
         }
 
+        var locationEl = document.getElementById('viewLocation');
+        if (ev.location) {
+            locationEl.textContent = ev.location;
+            locationEl.style.display = 'block';
+        } else {
+            locationEl.style.display = 'none';
+        }
+
+        var notesEl = document.getElementById('viewNotes');
+        if (ev.notes) {
+            notesEl.textContent = ev.notes;
+            notesEl.style.display = 'block';
+        } else {
+            notesEl.style.display = 'none';
+        }
+
         var rsvps = ev.rsvps || [];
         var myRsvp = null;
         for (var ri = 0; ri < rsvps.length; ri++) {
@@ -1135,29 +1174,60 @@
         }
 
         var statusEl = document.getElementById('rsvpMyStatus');
-        if (myRsvp) {
-            statusEl.innerHTML = '<span class="rsvp-status attending">You are attending!</span>';
-            document.getElementById('rsvpYesBtn').style.display = 'none';
-            document.getElementById('rsvpNoBtn').style.display = 'inline-block';
+        var goingBtn = document.getElementById('rsvpGoingBtn');
+        var notGoingBtn = document.getElementById('rsvpNotGoingBtn');
+
+        if (myRsvp && myRsvp.status === 'going') {
+            statusEl.innerHTML = '<span class="rsvp-status attending">You\'re going!</span>';
+            goingBtn.style.display = 'none';
+            notGoingBtn.style.display = 'inline-block';
+        } else if (myRsvp && myRsvp.status === 'not_going') {
+            statusEl.innerHTML = '<span class="rsvp-status not-attending">You\'re not going</span>';
+            goingBtn.style.display = 'inline-block';
+            notGoingBtn.style.display = 'none';
         } else {
             statusEl.innerHTML = '<span class="rsvp-status not-attending">You have not RSVP\'d</span>';
-            document.getElementById('rsvpYesBtn').style.display = 'inline-block';
-            document.getElementById('rsvpNoBtn').style.display = 'none';
+            goingBtn.style.display = 'inline-block';
+            notGoingBtn.style.display = 'inline-block';
         }
 
-        document.getElementById('rsvpCount').textContent = rsvps.length;
-        var listEl = document.getElementById('rsvpList');
-        listEl.innerHTML = '';
-        var noRsvpEl = document.getElementById('noRsvps');
+        var going = [];
+        var notGoing = [];
+        for (var gi = 0; gi < rsvps.length; gi++) {
+            if (rsvps[gi].status === 'not_going') {
+                notGoing.push(rsvps[gi]);
+            } else {
+                going.push(rsvps[gi]);
+            }
+        }
 
-        if (rsvps.length === 0) {
-            noRsvpEl.style.display = 'block';
+        document.getElementById('goingCount').textContent = going.length;
+        var goingListEl = document.getElementById('goingList');
+        goingListEl.innerHTML = '';
+        var noGoingEl = document.getElementById('noGoing');
+        if (going.length === 0) {
+            noGoingEl.style.display = 'block';
         } else {
-            noRsvpEl.style.display = 'none';
-            for (var li = 0; li < rsvps.length; li++) {
-                var liEl = document.createElement('li');
-                liEl.textContent = rsvps[li].name;
-                listEl.appendChild(liEl);
+            noGoingEl.style.display = 'none';
+            for (var gli = 0; gli < going.length; gli++) {
+                var gLi = document.createElement('li');
+                gLi.textContent = going[gli].name;
+                goingListEl.appendChild(gLi);
+            }
+        }
+
+        document.getElementById('notGoingCount').textContent = notGoing.length;
+        var notGoingListEl = document.getElementById('notGoingList');
+        notGoingListEl.innerHTML = '';
+        var noNotGoingEl = document.getElementById('noNotGoing');
+        if (notGoing.length === 0) {
+            noNotGoingEl.style.display = 'block';
+        } else {
+            noNotGoingEl.style.display = 'none';
+            for (var ngi = 0; ngi < notGoing.length; ngi++) {
+                var ngLi = document.createElement('li');
+                ngLi.textContent = notGoing[ngi].name;
+                notGoingListEl.appendChild(ngLi);
             }
         }
 
@@ -1182,23 +1252,17 @@
         if (!ev) return;
 
         var rsvps = ev.rsvps ? ev.rsvps.slice() : [];
+        var name = currentUser.firstName + ' ' + currentUser.lastName;
 
-        if (action === 'yes') {
-            var alreadyRsvpd = false;
-            for (var r = 0; r < rsvps.length; r++) {
-                if (rsvps[r].userId === currentUser.id) { alreadyRsvpd = true; break; }
-            }
-            if (!alreadyRsvpd) {
-                var name = currentUser.firstName + ' ' + currentUser.lastName;
-                rsvps.push({ userId: currentUser.id, name: name });
-            }
-        } else {
-            var filtered = [];
-            for (var f = 0; f < rsvps.length; f++) {
-                if (rsvps[f].userId !== currentUser.id) filtered.push(rsvps[f]);
-            }
-            rsvps = filtered;
+        // Remove existing RSVP for this user
+        var filtered = [];
+        for (var f = 0; f < rsvps.length; f++) {
+            if (rsvps[f].userId !== currentUser.id) filtered.push(rsvps[f]);
         }
+        rsvps = filtered;
+
+        // Add new RSVP with status
+        rsvps.push({ userId: currentUser.id, name: name, status: action });
 
         apiRequest('events/' + viewingEventId, 'PUT', { rsvps: rsvps })
             .then(function() {
@@ -1257,6 +1321,8 @@
         var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
             + '&text=' + title
             + '&dates=' + cal.startStr + '/' + cal.endStr;
+        if (ev.location) gcalUrl += '&location=' + encodeURIComponent(ev.location);
+        if (ev.notes) gcalUrl += '&details=' + encodeURIComponent(ev.notes);
 
         document.getElementById('gcalLink').href = gcalUrl;
     }
@@ -1286,6 +1352,8 @@
             + 'DTSTART:' + cal.startStr + '\r\n'
             + 'DTEND:' + cal.endStr + '\r\n'
             + 'SUMMARY:' + ev.title + '\r\n'
+            + (ev.location ? 'LOCATION:' + ev.location + '\r\n' : '')
+            + (ev.notes ? 'DESCRIPTION:' + ev.notes.replace(/\n/g, '\\n') + '\r\n' : '')
             + 'END:VEVENT\r\n'
             + 'END:VCALENDAR';
 
