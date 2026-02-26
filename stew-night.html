@@ -268,10 +268,15 @@
         }
 
         /* ---- Calendar ---- */
+        .calendar-wrapper {
+            background: #f5ede3;
+            min-height: calc(100vh - 60px);
+            padding: 2rem 1rem;
+        }
+
         .calendar-container {
             max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            margin: 0 auto;
         }
 
         .calendar-header {
@@ -663,13 +668,15 @@
         </div>
     </div>
 
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
-            <h2 id="calendarTitle"></h2>
-            <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+    <div class="calendar-wrapper">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
+                <h2 id="calendarTitle"></h2>
+                <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
     </div>
 
     <button class="add-stew-btn" id="addStewBtn" onclick="openAddModal()">+</button>
