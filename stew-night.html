@@ -737,7 +737,7 @@
         try {
             const val = localStorage.getItem('stewNight_' + key);
             return val ? JSON.parse(val) : fallback;
-        } catch { return fallback; }
+        } catch (e) { return fallback; }
     }
 
     function setData(key, value) {
@@ -760,25 +760,37 @@
     let viewingEventId = null;
 
     // ============ INIT ============
-    (function init() {
-        const now = new Date();
-        viewYear = now.getFullYear();
-        viewMonth = now.getMonth();
+    function initApp() {
+        try {
+            var now = new Date();
+            viewYear = now.getFullYear();
+            viewMonth = now.getMonth();
 
-        const session = getSession();
-        if (session) {
-            currentRole = session.role;
-            currentUser = session.user;
-            showApp();
+            var session = getSession();
+            if (session && session.user && session.user.firstName) {
+                currentRole = session.role;
+                currentUser = session.user;
+                showApp();
+            } else {
+                localStorage.removeItem('stewNight_session');
+            }
+
+            document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') checkPassword();
+            });
+            document.getElementById('loginEmail').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') loginUser();
+            });
+        } catch (e) {
+            console.error('Stew Night init error:', e);
         }
+    }
 
-        document.getElementById('passwordInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkPassword();
-        });
-        document.getElementById('loginEmail').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') loginUser();
-        });
-    })();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 
     // ============ PASSWORD CHECK ============
     function checkPassword() {
@@ -875,7 +887,9 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
 
-        const displayName = currentUser.firstName + ' ' + currentUser.lastName;
+        const displayName = (currentUser && currentUser.firstName)
+            ? currentUser.firstName + ' ' + currentUser.lastName
+            : 'User';
         document.getElementById('currentUserDisplay').textContent = displayName;
         document.getElementById('roleBadge').textContent = currentRole === 'admin' ? 'Admin' : 'Guest';
 
@@ -918,60 +932,70 @@
     }
 
     function renderCalendar() {
-        document.getElementById('calendarTitle').textContent =
-            MONTH_NAMES[viewMonth] + ' ' + viewYear;
+        try {
+            var titleEl = document.getElementById('calendarTitle');
+            var grid = document.getElementById('calendarGrid');
+            if (!titleEl || !grid) { console.error('Calendar elements not found'); return; }
 
-        const grid = document.getElementById('calendarGrid');
-        grid.innerHTML = '';
+            titleEl.textContent = MONTH_NAMES[viewMonth] + ' ' + viewYear;
+            grid.innerHTML = '';
 
-        DAY_NAMES.forEach(d => {
-            const el = document.createElement('div');
-            el.className = 'calendar-day-header';
-            el.textContent = d;
-            grid.appendChild(el);
-        });
-
-        const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-        const today = new Date();
-        const events = getEvents();
-
-        for (let i = 0; i < firstDay; i++) {
-            const el = document.createElement('div');
-            el.className = 'calendar-cell empty';
-            grid.appendChild(el);
-        }
-
-        for (let d = 1; d <= daysInMonth; d++) {
-            const el = document.createElement('div');
-            el.className = 'calendar-cell';
-
-            const dateStr = viewYear + '-' +
-                String(viewMonth + 1).padStart(2, '0') + '-' +
-                String(d).padStart(2, '0');
-
-            if (today.getFullYear() === viewYear &&
-                today.getMonth() === viewMonth &&
-                today.getDate() === d) {
-                el.classList.add('today');
+            for (var di = 0; di < DAY_NAMES.length; di++) {
+                var hdr = document.createElement('div');
+                hdr.className = 'calendar-day-header';
+                hdr.textContent = DAY_NAMES[di];
+                grid.appendChild(hdr);
             }
 
-            const dayNum = document.createElement('div');
-            dayNum.className = 'day-number';
-            dayNum.textContent = d;
-            el.appendChild(dayNum);
+            var firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            var today = new Date();
+            var events = getEvents();
 
-            const dayEvents = events.filter(ev => ev.date === dateStr);
-            dayEvents.forEach(ev => {
-                const evEl = document.createElement('div');
-                evEl.className = 'stew-event';
-                evEl.innerHTML = ev.title +
-                    '<span class="rsvp-count">' + (ev.rsvps ? ev.rsvps.length : 0) + ' RSVP(s)</span>';
-                evEl.onclick = function() { openViewModal(ev.id); };
-                el.appendChild(evEl);
-            });
+            for (var i = 0; i < firstDay; i++) {
+                var emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-cell empty';
+                grid.appendChild(emptyCell);
+            }
 
-            grid.appendChild(el);
+            for (var d = 1; d <= daysInMonth; d++) {
+                var el = document.createElement('div');
+                el.className = 'calendar-cell';
+
+                var dateStr = viewYear + '-' +
+                    String(viewMonth + 1).padStart(2, '0') + '-' +
+                    String(d).padStart(2, '0');
+
+                if (today.getFullYear() === viewYear &&
+                    today.getMonth() === viewMonth &&
+                    today.getDate() === d) {
+                    el.classList.add('today');
+                }
+
+                var dayNum = document.createElement('div');
+                dayNum.className = 'day-number';
+                dayNum.textContent = d;
+                el.appendChild(dayNum);
+
+                var dayEvents = [];
+                for (var ei = 0; ei < events.length; ei++) {
+                    if (events[ei].date === dateStr) dayEvents.push(events[ei]);
+                }
+                for (var evi = 0; evi < dayEvents.length; evi++) {
+                    (function(ev) {
+                        var evEl = document.createElement('div');
+                        evEl.className = 'stew-event';
+                        evEl.innerHTML = ev.title +
+                            '<span class="rsvp-count">' + (ev.rsvps ? ev.rsvps.length : 0) + ' RSVP(s)</span>';
+                        evEl.onclick = function() { openViewModal(ev.id); };
+                        el.appendChild(evEl);
+                    })(dayEvents[evi]);
+                }
+
+                grid.appendChild(el);
+            }
+        } catch (e) {
+            console.error('renderCalendar error:', e);
         }
     }
 
