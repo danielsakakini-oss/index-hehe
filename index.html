@@ -51,136 +51,6 @@
             filter: saturate(0.7) brightness(0.85) sepia(0.2);
         }
 
-        /* Landing, Login, and Create Account screens */
-        .screen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .screen.active {
-            display: flex;
-        }
-
-        .screen-box {
-            background: rgba(245, 237, 227, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(139, 107, 72, 0.25);
-            border-radius: 2px;
-            padding: 2.5rem;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow:
-                0 8px 32px rgba(59, 46, 30, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
-        }
-
-        .screen-box h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 0.85rem;
-            font-weight: 500;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: #8b6b48;
-            margin-bottom: 1.5rem;
-        }
-
-        .screen-box p {
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 0.7rem;
-            margin-bottom: 1rem;
-            border: 1px solid #8b6b48;
-            border-radius: 2px;
-            background: #8b6b48;
-            color: #f5ede3;
-            font-family: 'Cinzel', serif;
-            font-size: 0.75rem;
-            font-weight: 500;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #5a4130;
-            border-color: #5a4130;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: #5a4130;
-            border: 1px solid rgba(139, 107, 72, 0.4);
-        }
-
-        .btn-secondary:hover {
-            background: #5a4130;
-            color: #f5ede3;
-            border-color: #5a4130;
-        }
-
-        .form-input {
-            display: block;
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            margin-bottom: 1rem;
-            font-family: inherit;
-            font-size: 1rem;
-            border: 1px solid rgba(139, 107, 72, 0.3);
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.5);
-            color: #3b2e1e;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #8b6b48;
-        }
-
-        .form-input::placeholder {
-            color: #8b6b48;
-        }
-
-        .screen-link {
-            font-size: 0.85rem;
-            color: #8b6b48;
-            cursor: pointer;
-            margin-top: 0.5rem;
-        }
-
-        .screen-link a {
-            color: #5a4130;
-            text-decoration: underline;
-        }
-
-        .screen-link a:hover,
-        .screen-link:hover {
-            color: #5a4130;
-        }
-
-        /* Main content (shown after login) */
-        .main-content {
-            display: none;
-        }
-
-        .main-content.active {
-            display: block;
-        }
-
         .content-wrapper {
             position: relative;
             z-index: 10;
@@ -364,10 +234,6 @@
         }
 
         @media (max-width: 768px) {
-            .screen-box {
-                padding: 2rem;
-            }
-
             .content-wrapper {
                 padding: 2rem 1.2rem;
             }
@@ -425,116 +291,37 @@
     <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
     <div class="bg-overlay"></div>
 
-    <!-- Landing Screen -->
-    <div id="landingScreen" class="screen active">
-        <div class="screen-box">
-            <h2>Welcome</h2>
-            <button class="btn" onclick="showScreen('loginScreen')">Login</button>
-            <button class="btn btn-secondary" onclick="showScreen('createAccountScreen')">Create a New Account</button>
-        </div>
-    </div>
+    <div class="content-wrapper">
+        <div class="card">
+            <h1 class="name">Daniel Sakakini</h1>
 
-    <!-- Login Screen -->
-    <div id="loginScreen" class="screen">
-        <div class="screen-box">
-            <h2>Login</h2>
-            <input type="email" class="form-input" id="loginEmail" placeholder="Email">
-            <input type="password" class="form-input" id="loginPassword" placeholder="Password">
-            <button class="btn" onclick="login()">Login</button>
-            <p class="screen-link" onclick="showScreen('createAccountScreen')">Don't have an account? Create one</p>
-            <p class="screen-link" onclick="showScreen('landingScreen')">Back</p>
-        </div>
-    </div>
+            <div class="divider"></div>
 
-    <!-- Create Account Screen -->
-    <div id="createAccountScreen" class="screen">
-        <div class="screen-box">
-            <h2>Create a New Account</h2>
-            <input type="text" class="form-input" id="createName" placeholder="Full Name">
-            <input type="email" class="form-input" id="createEmail" placeholder="Email">
-            <input type="password" class="form-input" id="createPassword" placeholder="Password">
-            <input type="password" class="form-input" id="createPasswordConfirm" placeholder="Confirm Password">
-            <button class="btn" onclick="createAccount()">Create Account</button>
-            <p class="screen-link" onclick="showScreen('loginScreen')">Already have an account? Login</p>
-            <p class="screen-link" onclick="showScreen('landingScreen')">Back</p>
-        </div>
-    </div>
-
-    <!-- Main Content (shown after login) -->
-    <div id="mainContent" class="main-content">
-        <div class="content-wrapper">
-            <div class="card">
-                <h1 class="name">Daniel Sakakini</h1>
-
-                <div class="divider"></div>
-
-                <h2 class="section-title">Projects</h2>
-                <div class="projects-list">
-                    <div class="project-item">
-                        <a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a>
-                        <span class="project-label"> &mdash; App Store</span>
-                    </div>
-                    <div class="project-item">
-                        <a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a>
-                        <span class="project-label"> &mdash; Podcast</span>
-                    </div>
+            <h2 class="section-title">Projects</h2>
+            <div class="projects-list">
+                <div class="project-item">
+                    <a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a>
+                    <span class="project-label"> &mdash; App Store</span>
                 </div>
-
-                <div class="divider"></div>
-
-                <div class="social-links">
-                    <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-                    <a href="mailto:danielsakakini@gmail.com">Email</a>
+                <div class="project-item">
+                    <a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a>
+                    <span class="project-label"> &mdash; Podcast</span>
                 </div>
             </div>
-        </div>
 
-        <div class="stew-night-link">
-            <a href="stew-night.html">Stew Night</a>
-        </div>
+            <div class="divider"></div>
 
-        <div class="location-text">Palamos, Spain, 2024</div>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+                <a href="mailto:danielsakakini@gmail.com">Email</a>
+            </div>
+        </div>
     </div>
 
-    <script>
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(function(s) {
-                s.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
+    <div class="stew-night-link">
+        <a href="stew-night.html">Stew Night</a>
+    </div>
 
-        function login() {
-            var email = document.getElementById('loginEmail').value;
-            var password = document.getElementById('loginPassword').value;
-            if (!email || !password) {
-                alert('Please fill in all fields.');
-                return;
-            }
-            document.querySelectorAll('.screen').forEach(function(s) {
-                s.classList.remove('active');
-            });
-            document.getElementById('mainContent').classList.add('active');
-        }
-
-        function createAccount() {
-            var name = document.getElementById('createName').value;
-            var email = document.getElementById('createEmail').value;
-            var password = document.getElementById('createPassword').value;
-            var confirm = document.getElementById('createPasswordConfirm').value;
-            if (!name || !email || !password || !confirm) {
-                alert('Please fill in all fields.');
-                return;
-            }
-            if (password !== confirm) {
-                alert('Passwords do not match.');
-                return;
-            }
-            document.querySelectorAll('.screen').forEach(function(s) {
-                s.classList.remove('active');
-            });
-            document.getElementById('mainContent').classList.add('active');
-        }
-    </script>
+    <div class="location-text">Palamos, Spain, 2024</div>
 </body>
 </html>
