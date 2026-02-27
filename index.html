@@ -114,22 +114,208 @@
             color: white;
             z-index: 10;
         }
+
+        /* Landing, Login, and Create Account screens */
+        .screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen-box {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .screen-box h2 {
+            text-decoration: none;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .screen-box p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Garamond', 'Baskerville', serif;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .form-input {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Garamond', 'Baskerville', serif;
+            font-size: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .screen-link {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .screen-link:hover {
+            color: white;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .screen-box {
+                padding: 2rem;
+            }
+
+            .screen-box h2 {
+                font-size: 1.6rem;
+            }
+        }
     </style>
 </head>
 <body>
     <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
-    
-    <div class="projects">
-        <h2>Projects</h2>
-        <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - App Store</p>
-        <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
+
+    <!-- Landing Screen -->
+    <div id="landingScreen" class="screen active">
+        <div class="screen-box">
+            <h2>Welcome</h2>
+            <button class="btn" onclick="showScreen('loginScreen')">Login</button>
+            <button class="btn" onclick="showScreen('createAccountScreen')">Create a New Account</button>
+        </div>
     </div>
-    
-    <div class="social-links">
-        <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-        <a href="mailto:danielsakakini@gmail.com">Email</a>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="screen-box">
+            <h2>Login</h2>
+            <input type="email" class="form-input" id="loginEmail" placeholder="Email">
+            <input type="password" class="form-input" id="loginPassword" placeholder="Password">
+            <button class="btn" onclick="login()">Login</button>
+            <p class="screen-link" onclick="showScreen('createAccountScreen')">Don't have an account? Create one</p>
+            <p class="screen-link" onclick="showScreen('landingScreen')">Back</p>
+        </div>
     </div>
-    
-    <div class="location-text">Palamos, Spain, 2024</div>
+
+    <!-- Create Account Screen -->
+    <div id="createAccountScreen" class="screen">
+        <div class="screen-box">
+            <h2>Create a New Account</h2>
+            <input type="text" class="form-input" id="createName" placeholder="Full Name">
+            <input type="email" class="form-input" id="createEmail" placeholder="Email">
+            <input type="password" class="form-input" id="createPassword" placeholder="Password">
+            <input type="password" class="form-input" id="createPasswordConfirm" placeholder="Confirm Password">
+            <button class="btn" onclick="createAccount()">Create Account</button>
+            <p class="screen-link" onclick="showScreen('loginScreen')">Already have an account? Login</p>
+            <p class="screen-link" onclick="showScreen('landingScreen')">Back</p>
+        </div>
+    </div>
+
+    <!-- Main Content (shown after login) -->
+    <div id="mainContent" class="main-content">
+        <div class="projects">
+            <h2>Projects</h2>
+            <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - App Store</p>
+            <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
+        </div>
+
+        <div class="social-links">
+            <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+            <a href="mailto:danielsakakini@gmail.com">Email</a>
+        </div>
+
+        <div class="location-text">Palamos, Spain, 2024</div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function login() {
+            var email = document.getElementById('loginEmail').value;
+            var password = document.getElementById('loginPassword').value;
+            if (!email || !password) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            // Hide all screens, show main content
+            document.querySelectorAll('.screen').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            document.getElementById('mainContent').classList.add('active');
+        }
+
+        function createAccount() {
+            var name = document.getElementById('createName').value;
+            var email = document.getElementById('createEmail').value;
+            var password = document.getElementById('createPassword').value;
+            var confirm = document.getElementById('createPasswordConfirm').value;
+            if (!name || !email || !password || !confirm) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            if (password !== confirm) {
+                alert('Passwords do not match.');
+                return;
+            }
+            // Hide all screens, show main content
+            document.querySelectorAll('.screen').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            document.getElementById('mainContent').classList.add('active');
+        }
+    </script>
 </body>
 </html>
