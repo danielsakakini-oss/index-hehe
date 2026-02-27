@@ -701,6 +701,14 @@
         <div class="login-error" id="passwordError"></div>
     </div>
 
+    <!-- Login or Create Account choice (shown after password accepted) -->
+    <div class="login-box" id="choiceBox" style="display:none;">
+        <h2>Welcome</h2>
+        <button onclick="showUserLogin()">Login</button>
+        <div style="height:0.5rem;"></div>
+        <button onclick="showRegister()" style="background:transparent; color:#5a4130; border:1px solid rgba(139,107,72,0.4);">Create an Account</button>
+    </div>
+
     <!-- Name entry (shown after password accepted, for both admin and guest) -->
     <div class="login-box" id="nameBox" style="display:none;">
         <h2>Create Your Account</h2>
@@ -934,7 +942,7 @@
         apiRequest('auth', 'POST').then(function(result) {
             pendingRole = result.role;
             document.getElementById('passwordBox').style.display = 'none';
-            document.getElementById('nameBox').style.display = 'block';
+            document.getElementById('choiceBox').style.display = 'block';
             errEl.textContent = '';
         }).catch(function() {
             currentPassword = null;
@@ -944,11 +952,13 @@
 
     // ============ USER REGISTRATION ============
     function showRegister() {
+        document.getElementById('choiceBox').style.display = 'none';
         document.getElementById('userLoginBox').style.display = 'none';
         document.getElementById('nameBox').style.display = 'block';
     }
 
     function showUserLogin() {
+        document.getElementById('choiceBox').style.display = 'none';
         document.getElementById('nameBox').style.display = 'none';
         document.getElementById('userLoginBox').style.display = 'block';
     }
@@ -1044,6 +1054,7 @@
         cachedEvents = [];
 
         document.getElementById('passwordBox').style.display = 'block';
+        document.getElementById('choiceBox').style.display = 'none';
         document.getElementById('nameBox').style.display = 'none';
         document.getElementById('userLoginBox').style.display = 'none';
         document.getElementById('passwordInput').value = '';
