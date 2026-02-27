@@ -1,25 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daniel Sakakini - Portfolio</title>
+    <title>Daniel Sakakini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             min-height: 100vh;
-            font-family: 'Garamond', 'Baskerville', serif;
-            background: white;
-            color: black;
+            font-family: 'Cormorant Garamond', 'Garamond', serif;
+            background: #f5ede3;
+            color: #3b2e1e;
             line-height: 1.6;
             overflow-x: hidden;
         }
-        
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background:
+                linear-gradient(180deg,
+                    rgba(62, 42, 24, 0.35) 0%,
+                    rgba(62, 42, 24, 0.1) 30%,
+                    rgba(62, 42, 24, 0.05) 60%,
+                    rgba(62, 42, 24, 0.4) 100%
+                );
+            pointer-events: none;
+        }
+
         .center-image {
             position: fixed;
             top: 0;
@@ -28,91 +48,7 @@
             height: 100%;
             object-fit: cover;
             z-index: -1;
-        }
-        
-        .projects {
-            position: fixed;
-            top: 5vh;
-            left: 2rem;
-            z-index: 10;
-            text-align: left;
-        }
-        
-        @media (max-width: 768px) {
-            h2 {
-                font-size: 2.4rem;
-            }
-            
-            p {
-                font-size: 1.8rem;
-            }
-            
-            .social-links a {
-                font-size: 1.4rem;
-            }
-            
-            .projects {
-                top: 3vh;
-                left: 1rem;
-                right: 1rem;
-            }
-
-            .social-links {
-                gap: 2rem;
-                bottom: 3rem;
-            }
-
-            .location-text {
-                font-size: 0.75rem;
-                padding: 0.5rem;
-            }
-        }
-        
-        h2 {
-            font-size: 3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: white;
-            text-decoration: underline;
-        }
-        
-        p {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: white;
-        }
-        
-        a {
-            color: white;
-            text-decoration: none;
-        }
-        
-        a:hover {
-            opacity: 0.7;
-        }
-        
-        .social-links {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 3rem;
-            z-index: 10;
-        }
-        
-        .social-links a {
-            font-size: 2rem;
-            color: white;
-        }
-        
-        .location-text {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            font-size: 0.9rem;
-            color: white;
-            z-index: 10;
+            filter: saturate(0.7) brightness(0.85) sepia(0.2);
         }
 
         /* Landing, Login, and Create Account screens */
@@ -133,21 +69,28 @@
         }
 
         .screen-box {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(245, 237, 227, 0.92);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 3rem;
+            border: 1px solid rgba(139, 107, 72, 0.25);
+            border-radius: 2px;
+            padding: 2.5rem;
             text-align: center;
             max-width: 400px;
             width: 90%;
+            box-shadow:
+                0 8px 32px rgba(59, 46, 30, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
 
         .screen-box h2 {
-            text-decoration: none;
-            font-size: 2rem;
-            margin-bottom: 2rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            margin-bottom: 1.5rem;
         }
 
         .screen-box p {
@@ -158,50 +101,78 @@
         .btn {
             display: block;
             width: 100%;
-            padding: 0.9rem 1.5rem;
+            padding: 0.7rem;
             margin-bottom: 1rem;
-            font-family: 'Garamond', 'Baskerville', serif;
-            font-size: 1.1rem;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            border: 1px solid #8b6b48;
+            border-radius: 2px;
+            background: #8b6b48;
+            color: #f5ede3;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.3s ease;
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: #5a4130;
+            border-color: #5a4130;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #5a4130;
+            border: 1px solid rgba(139, 107, 72, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: #5a4130;
+            color: #f5ede3;
+            border-color: #5a4130;
         }
 
         .form-input {
             display: block;
             width: 100%;
-            padding: 0.8rem 1rem;
+            padding: 0.6rem 0.8rem;
             margin-bottom: 1rem;
-            font-family: 'Garamond', 'Baskerville', serif;
+            font-family: inherit;
             font-size: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
+            border: 1px solid rgba(139, 107, 72, 0.3);
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #3b2e1e;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b6b48;
         }
 
         .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: #8b6b48;
         }
 
         .screen-link {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            color: #8b6b48;
             cursor: pointer;
             margin-top: 0.5rem;
         }
 
-        .screen-link:hover {
-            color: white;
+        .screen-link a {
+            color: #5a4130;
+            text-decoration: underline;
         }
 
+        .screen-link a:hover,
+        .screen-link:hover {
+            color: #5a4130;
+        }
+
+        /* Main content (shown after login) */
         .main-content {
             display: none;
         }
@@ -210,26 +181,255 @@
             display: block;
         }
 
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 2rem;
+        }
+
+        .card {
+            background: rgba(245, 237, 227, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 107, 72, 0.25);
+            border-radius: 2px;
+            padding: 3.5rem 4rem;
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            box-shadow:
+                0 8px 32px rgba(59, 46, 30, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-color: rgba(139, 107, 72, 0.3);
+            border-style: solid;
+        }
+
+        .card::before {
+            top: 12px;
+            left: 12px;
+            border-width: 1px 0 0 1px;
+        }
+
+        .card::after {
+            bottom: 12px;
+            right: 12px;
+            border-width: 0 1px 1px 0;
+        }
+
+        .name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: #5a4130;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #8b6b48, transparent);
+            margin: 1.2rem auto;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            text-align: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .projects-list {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .project-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .project-item a {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: #5a4130;
+            text-decoration: none;
+            letter-spacing: 0.03em;
+            transition: color 0.3s ease, letter-spacing 0.3s ease;
+            display: inline-block;
+        }
+
+        .project-item a:hover {
+            color: #8b6b48;
+            letter-spacing: 0.08em;
+        }
+
+        .project-label {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #8b6b48;
+            letter-spacing: 0.02em;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .social-links a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #5a4130;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .social-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: #8b6b48;
+            transition: width 0.3s ease, left 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: #8b6b48;
+        }
+
+        .social-links a:hover::after {
+            width: 100%;
+            left: 0;
+        }
+
+        .location-text {
+            position: fixed;
+            bottom: 1.2rem;
+            right: 1.5rem;
+            font-size: 0.7rem;
+            font-style: italic;
+            color: rgba(245, 237, 227, 0.7);
+            z-index: 10;
+            letter-spacing: 0.05em;
+        }
+
+        .stew-night-link {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 20;
+        }
+
+        .stew-night-link a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(245, 237, 227, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .stew-night-link a:hover {
+            color: rgba(245, 237, 227, 1);
+        }
+
         @media (max-width: 768px) {
             .screen-box {
                 padding: 2rem;
             }
 
-            .screen-box h2 {
-                font-size: 1.6rem;
+            .content-wrapper {
+                padding: 2rem 1.2rem;
+            }
+
+            .card {
+                padding: 2.5rem 2rem;
+            }
+
+            .name {
+                font-size: 1.3rem;
+                letter-spacing: 0.25em;
+            }
+
+            .project-item a {
+                font-size: 1.1rem;
+            }
+
+            .social-links {
+                gap: 2rem;
+            }
+
+            .social-links a {
+                font-size: 0.65rem;
+            }
+
+            .location-text {
+                font-size: 0.6rem;
+                right: 1rem;
+                bottom: 1rem;
+            }
+
+            .stew-night-link {
+                top: 1rem;
+                right: 1rem;
+            }
+
+            .stew-night-link a {
+                font-size: 0.6rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .name {
+                font-size: 1.1rem;
+                letter-spacing: 0.2em;
             }
         }
     </style>
 </head>
 <body>
     <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
+    <div class="bg-overlay"></div>
 
     <!-- Landing Screen -->
     <div id="landingScreen" class="screen active">
         <div class="screen-box">
             <h2>Welcome</h2>
             <button class="btn" onclick="showScreen('loginScreen')">Login</button>
-            <button class="btn" onclick="showScreen('createAccountScreen')">Create a New Account</button>
+            <button class="btn btn-secondary" onclick="showScreen('createAccountScreen')">Create a New Account</button>
         </div>
     </div>
 
@@ -261,15 +461,35 @@
 
     <!-- Main Content (shown after login) -->
     <div id="mainContent" class="main-content">
-        <div class="projects">
-            <h2>Projects</h2>
-            <p><a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a> - App Store</p>
-            <p><a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a> - Podcast</p>
+        <div class="content-wrapper">
+            <div class="card">
+                <h1 class="name">Daniel Sakakini</h1>
+
+                <div class="divider"></div>
+
+                <h2 class="section-title">Projects</h2>
+                <div class="projects-list">
+                    <div class="project-item">
+                        <a href="https://apps.apple.com/us/app/clip-clop/id1558360871" target="_blank">Clip Clop!</a>
+                        <span class="project-label"> &mdash; App Store</span>
+                    </div>
+                    <div class="project-item">
+                        <a href="https://www.iheardeadpeople.com/nietzsche" target="_blank">I Hear Dead People</a>
+                        <span class="project-label"> &mdash; Podcast</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+                    <a href="mailto:danielsakakini@gmail.com">Email</a>
+                </div>
+            </div>
         </div>
 
-        <div class="social-links">
-            <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-            <a href="mailto:danielsakakini@gmail.com">Email</a>
+        <div class="stew-night-link">
+            <a href="stew-night.html">Stew Night</a>
         </div>
 
         <div class="location-text">Palamos, Spain, 2024</div>
@@ -290,7 +510,6 @@
                 alert('Please fill in all fields.');
                 return;
             }
-            // Hide all screens, show main content
             document.querySelectorAll('.screen').forEach(function(s) {
                 s.classList.remove('active');
             });
@@ -310,7 +529,6 @@
                 alert('Passwords do not match.');
                 return;
             }
-            // Hide all screens, show main content
             document.querySelectorAll('.screen').forEach(function(s) {
                 s.classList.remove('active');
             });
