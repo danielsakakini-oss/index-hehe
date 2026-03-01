@@ -638,7 +638,118 @@
             flex-shrink: 0;
         }
 
+        /* ---- Side Panels ---- */
+        .calendar-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .side-panel-left,
+        .side-panel-right {
+            flex: 0 0 220px;
+            padding-top: 1rem;
+        }
+
+        .side-panel-left {
+            text-align: center;
+        }
+
+        .side-panel-left .motto-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            color: rgba(245, 237, 227, 0.95);
+            text-transform: uppercase;
+            line-height: 1.4;
+            text-shadow: 0 2px 8px rgba(59, 46, 30, 0.4);
+        }
+
+        .side-panel-left .motto-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            font-style: italic;
+            color: rgba(245, 237, 227, 0.7);
+            margin-top: 0.6rem;
+            line-height: 1.5;
+            text-shadow: 0 1px 4px rgba(59, 46, 30, 0.3);
+        }
+
+        .side-panel-right {
+            text-align: center;
+        }
+
+        .side-panel-right .portrait-img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow:
+                0 0 12px 4px rgba(245, 237, 227, 0.3),
+                0 0 24px 8px rgba(245, 237, 227, 0.15),
+                0 4px 20px rgba(59, 46, 30, 0.25);
+            filter: contrast(1.02);
+            border: 3px solid rgba(245, 237, 227, 0.4);
+        }
+
+        .side-panel-right .portrait-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: rgba(245, 237, 227, 0.75);
+            margin-top: 1rem;
+            line-height: 1.6;
+            text-shadow: 0 1px 4px rgba(59, 46, 30, 0.3);
+        }
+
+        .calendar-center {
+            flex: 1;
+            min-width: 0;
+        }
+
         /* ---- Responsive ---- */
+        @media (max-width: 1100px) {
+            .side-panel-left,
+            .side-panel-right {
+                flex: 0 0 180px;
+            }
+
+            .side-panel-right .portrait-img {
+                width: 160px;
+                height: 160px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .calendar-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .side-panel-left,
+            .side-panel-right {
+                flex: none;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .side-panel-left {
+                order: -1;
+            }
+
+            .side-panel-right {
+                order: 1;
+            }
+
+            .side-panel-right .portrait-img {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
         @media (max-width: 768px) {
             .top-bar {
                 flex-direction: column;
@@ -751,13 +862,25 @@
     </div>
 
     <div class="calendar-wrapper">
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
-                <h2 id="calendarTitle"></h2>
-                <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+        <div class="calendar-layout">
+            <div class="side-panel-left">
+                <div class="motto-title">E Pluribus Stewnum</div>
+                <div class="motto-subtitle">'Out of many ingredients, one stew'</div>
             </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-center">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
+                        <h2 id="calendarTitle"></h2>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+            </div>
+            <div class="side-panel-right">
+                <img src="stew-portrait.jpg" alt="Stew Night portrait" class="portrait-img">
+                <div class="portrait-quote">May we break bread together, and feast on mutton and pea. For what greater pleasure, than stew and good company?</div>
+            </div>
         </div>
     </div>
 
