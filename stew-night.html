@@ -641,8 +641,8 @@
         /* ---- Subscribe Section ---- */
         .subscribe-section {
             text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.2rem;
             border-top: 1px solid rgba(139, 107, 72, 0.15);
         }
 
@@ -658,9 +658,9 @@
 
         .subscribe-links {
             display: flex;
+            flex-direction: column;
             gap: 0.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
+            align-items: center;
         }
 
         /* ---- Side Panels ---- */
@@ -892,16 +892,6 @@
             <div class="side-panel-left">
                 <div class="motto-title">E Pluribus Stewnum</div>
                 <div class="motto-subtitle">'Out of many ingredients, one stew'</div>
-            </div>
-            <div class="calendar-center">
-                <div class="calendar-container">
-                    <div class="calendar-header">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
-                        <h2 id="calendarTitle"></h2>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
-                    </div>
-                    <div class="calendar-grid" id="calendarGrid"></div>
-                </div>
                 <div class="subscribe-section">
                     <h3 class="subscribe-title">Subscribe to Calendar</h3>
                     <div class="subscribe-links">
@@ -914,6 +904,16 @@
                             iCal
                         </a>
                     </div>
+                </div>
+            </div>
+            <div class="calendar-center">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
+                        <h2 id="calendarTitle"></h2>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
                 </div>
             </div>
             <div class="side-panel-right">
