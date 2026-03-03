@@ -638,6 +638,31 @@
             flex-shrink: 0;
         }
 
+        /* ---- Subscribe Section ---- */
+        .subscribe-section {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(139, 107, 72, 0.15);
+        }
+
+        .subscribe-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            margin-bottom: 0.8rem;
+        }
+
+        .subscribe-links {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         /* ---- Side Panels ---- */
         .calendar-layout {
             display: flex;
@@ -876,6 +901,19 @@
                         <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
                     </div>
                     <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+                <div class="subscribe-section">
+                    <h3 class="subscribe-title">Subscribe to Calendar</h3>
+                    <div class="subscribe-links">
+                        <a id="subscribeGcal" class="btn-cal" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Google Calendar
+                        </a>
+                        <a id="subscribeIcal" class="btn-cal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            iCal
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="side-panel-right">
@@ -1155,6 +1193,13 @@
         document.getElementById('roleBadge').textContent = currentRole === 'admin' ? 'Admin' : 'Guest';
 
         document.getElementById('addStewBtn').style.display = currentRole === 'admin' ? 'block' : 'none';
+
+        // Set up calendar subscription links
+        var calFeedUrl = window.location.origin + '/api/calendar';
+        var webcalUrl = calFeedUrl.replace(/^https?:\/\//, 'webcal://');
+        document.getElementById('subscribeGcal').href =
+            'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcalUrl);
+        document.getElementById('subscribeIcal').href = webcalUrl;
 
         loadAndRenderCalendar();
     }

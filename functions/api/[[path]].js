@@ -42,6 +42,11 @@ export async function onRequest(context) {
     return handleAuth(request);
   }
 
+  // Public calendar feed (no auth required for subscription)
+  if (path === 'calendar' && request.method === 'GET') {
+    return handleCalendarFeed(env);
+  }
+
   const role = verifyPassword(request);
   if (!role) {
     return jsonResponse({ error: 'Unauthorized' }, 401);
@@ -128,6 +133,58 @@ async function handleEvent(request, env, role, id) {
   }
 
   return jsonResponse({ error: 'Method not allowed' }, 405);
+}
+
+// Calendar feed handler (public, no auth)
+async function handleCalendarFeed(env) {
+  const data = await env.STEW_KV.get('events');
+  const events = data ? JSON.parse(data) : [];
+
+  const now = new Date();
+  const stamp = now.getUTCFullYear()
+    + String(now.getUTCMonth() + 1).padStart(2, '0')
+    + String(now.getUTCDate()).padStart(2, '0') + 'T'
+    + String(now.getUTCHours()).padStart(2, '0')
+    + String(now.getUTCMinutes()).padStart(2, '0')
+    + String(now.getUTCSeconds()).padStart(2, '0') + 'Z';
+
+  let ics = 'BEGIN:VCALENDAR\r\n'
+    + 'VERSION:2.0\r\n'
+    + 'PRODID:-//Stew Night//EN\r\n'
+    + 'X-WR-CALNAME:Stew Night\r\n'
+    + 'CALSCALE:GREGORIAN\r\n'
+    + 'METHOD:PUBLISH\r\n';
+
+  for (const ev of events) {
+    const parts = ev.date.split('-');
+    const startHour = ev.time ? ev.time.split(':')[0] : '19';
+    const startMin = ev.time ? ev.time.split(':')[1] : '00';
+    const endHour = String(parseInt(startHour) + 2).padStart(2, '0');
+
+    const dtStart = parts[0] + parts[1] + parts[2] + 'T' + startHour + startMin + '00';
+    const dtEnd = parts[0] + parts[1] + parts[2] + 'T' + endHour + startMin + '00';
+
+    ics += 'BEGIN:VEVENT\r\n'
+      + 'UID:' + ev.id + '@stewnight\r\n'
+      + 'DTSTAMP:' + stamp + '\r\n'
+      + 'DTSTART:' + dtStart + '\r\n'
+      + 'DTEND:' + dtEnd + '\r\n'
+      + 'SUMMARY:' + (ev.title || 'Stew Night') + '\r\n';
+    if (ev.location) ics += 'LOCATION:' + ev.location + '\r\n';
+    if (ev.notes) ics += 'DESCRIPTION:' + ev.notes.replace(/\n/g, '\\n') + '\r\n';
+    ics += 'END:VEVENT\r\n';
+  }
+
+  ics += 'END:VCALENDAR';
+
+  return new Response(ics, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'inline; filename="stew-night.ics"',
+      ...corsHeaders,
+    },
+  });
 }
 
 // Users handlers
