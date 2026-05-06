@@ -176,6 +176,25 @@
             color: #8b6b48;
         }
 
+        .login-home-link {
+            margin-top: 1.5rem;
+        }
+
+        .login-home-link a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(245, 237, 227, 0.55);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .login-home-link a:hover {
+            color: rgba(245, 237, 227, 0.9);
+        }
+
         /* ---- App Layout ---- */
         .app {
             display: none;
@@ -829,6 +848,7 @@
 <div class="login-screen" id="loginScreen">
     <h1>Stew Night</h1>
     <p class="subtitle">Enter the password to continue</p>
+    <div class="login-home-link"><a href="index.html">&larr; Home</a></div>
 
     <!-- Password Entry -->
     <div class="login-box" id="passwordBox">
