@@ -154,25 +154,24 @@
     zoomTo(ZOOM.level * factor, e.clientX - r.left, e.clientY - r.top);
   }, { passive: false });
 
-  const activePointers = new Map();
+  // ============================================================
+  //  Pan (mouse) — Pointer Events, mouse only
+  // ============================================================
   let drag = null;
 
   mapWrap.addEventListener('pointerdown', e => {
-    if (e.target.closest('.zoom-ctrl')) return;
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (activePointers.size > 1) return; // pinch handled by touch events below
-    mapWrap.setPointerCapture(e.pointerId);
-    if (e.target.closest('.pin-group')) return;
+    if (e.pointerType !== 'mouse') return;
+    if (e.button !== 0) return;
+    if (e.target.closest('.zoom-ctrl') || e.target.closest('.pin-group')) return;
     if (document.body.classList.contains('add-mode')) return;
     if (ZOOM.level <= ZOOM.min + 0.001) return;
+    mapWrap.setPointerCapture(e.pointerId);
     drag = { x0: e.clientX, y0: e.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
     document.body.classList.add('panning');
   });
 
   mapWrap.addEventListener('pointermove', e => {
-    if (activePointers.size > 1) return; // pinch handled by touch events below
-    if (!drag) return;
+    if (e.pointerType !== 'mouse' || !drag) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
     ZOOM.tx = drag.tx0 + dx;
@@ -180,11 +179,9 @@
     applyTransform();
   });
 
-  function endDrag(e) {
-    activePointers.delete(e.pointerId);
+  mapWrap.addEventListener('pointerup', e => {
+    if (e.pointerType !== 'mouse') return;
     try { mapWrap.releasePointerCapture(e.pointerId); } catch {}
-    if (activePointers.size > 0) return;
-
     const wasMoved = drag?.moved;
     drag = null;
     document.body.classList.remove('panning');
@@ -192,31 +189,36 @@
       const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
       window.addEventListener('click', stop, { capture: true, once: true });
     }
-  }
+  });
 
-  mapWrap.addEventListener('pointerup',     endDrag);
-  mapWrap.addEventListener('pointercancel', endDrag);
-
-  // ---- Pinch-to-zoom (Google Maps style) ----
-  // Must be passive:false so we can call preventDefault() and stop
-  // iOS Safari from intercepting the gesture as a native page zoom.
-  // On each move we recompute the full transform from the snapshot
-  // taken at touchstart — no drift, dynamic focal point.
+  // ============================================================
+  //  Pan + Pinch-to-zoom (touch) — Touch Events, owns the layer
+  //
+  //  We call e.preventDefault() on EVERY touchstart and touchmove,
+  //  handing full gesture control to JS. This is the only reliable
+  //  way to stop iOS Safari from intercepting the pinch as a native
+  //  page zoom — conditional preventDefault (only on 2-finger) fires
+  //  too late; iOS commits to a native gesture on the first touch.
+  // ============================================================
   let pinch = null;
 
   mapWrap.addEventListener('touchstart', e => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
+    e.preventDefault(); // must be unconditional — see comment above
+
+    if (e.touches.length === 1) {
+      if (document.body.classList.contains('add-mode')) return;
+      if (ZOOM.level <= ZOOM.min + 0.001) return;
+      const t = e.touches[0];
+      drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
+      document.body.classList.add('panning');
+    } else if (e.touches.length === 2) {
       drag = null;
       document.body.classList.remove('panning');
       const t0 = e.touches[0], t1 = e.touches[1];
       const r  = mapWrap.getBoundingClientRect();
       pinch = {
         dist:   Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY),
-        level0: ZOOM.level,
-        tx0:    ZOOM.tx,
-        ty0:    ZOOM.ty,
-        // initial midpoint relative to mapWrap
+        level0: ZOOM.level, tx0: ZOOM.tx, ty0: ZOOM.ty,
         mx0:    (t0.clientX + t1.clientX) / 2 - r.left,
         my0:    (t0.clientY + t1.clientY) / 2 - r.top,
       };
@@ -224,26 +226,27 @@
   }, { passive: false });
 
   mapWrap.addEventListener('touchmove', e => {
-    if (e.touches.length === 2 && pinch) {
-      e.preventDefault();
+    e.preventDefault();
+
+    if (e.touches.length === 1 && drag) {
+      const t  = e.touches[0];
+      const dx = t.clientX - drag.x0, dy = t.clientY - drag.y0;
+      if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+      ZOOM.tx = drag.tx0 + dx;
+      ZOOM.ty = drag.ty0 + dy;
+      applyTransform();
+    } else if (e.touches.length === 2 && pinch) {
       const t0 = e.touches[0], t1 = e.touches[1];
       const r  = mapWrap.getBoundingClientRect();
-
       const curDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-      // current midpoint relative to mapWrap
       const curMx   = (t0.clientX + t1.clientX) / 2 - r.left;
       const curMy   = (t0.clientY + t1.clientY) / 2 - r.top;
-
       const newLevel = Math.max(ZOOM.min, Math.min(ZOOM.max, pinch.level0 * (curDist / pinch.dist)));
       const f    = fitScale();
       const sOld = f * pinch.level0;
       const sNew = f * newLevel;
-
-      // Map point that was under the initial midpoint
       const mapX = (pinch.mx0 - pinch.tx0) / sOld;
       const mapY = (pinch.my0 - pinch.ty0) / sOld;
-
-      // Place that map point under the current midpoint (pan + zoom together)
       ZOOM.level = newLevel;
       ZOOM.tx    = curMx - mapX * sNew;
       ZOOM.ty    = curMy - mapY * sNew;
@@ -251,8 +254,24 @@
     }
   }, { passive: false });
 
-  mapWrap.addEventListener('touchend',    e => { if (e.touches.length < 2) pinch = null; }, { passive: true });
-  mapWrap.addEventListener('touchcancel', () => { pinch = null; },                           { passive: true });
+  mapWrap.addEventListener('touchend', e => {
+    if (e.touches.length === 0) {
+      const wasMoved = drag?.moved;
+      drag = null; pinch = null;
+      document.body.classList.remove('panning');
+      if (wasMoved) {
+        const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        window.addEventListener('click', stop, { capture: true, once: true });
+      }
+    } else if (e.touches.length === 1) {
+      pinch = null;
+    }
+  }, { passive: true });
+
+  mapWrap.addEventListener('touchcancel', () => {
+    drag = null; pinch = null;
+    document.body.classList.remove('panning');
+  }, { passive: true });
 
   $('#zoomIn').addEventListener('click',    () => zoomTo(ZOOM.level * 1.5, null, null, true));
   $('#zoomOut').addEventListener('click',   () => zoomTo(ZOOM.level / 1.5, null, null, true));
