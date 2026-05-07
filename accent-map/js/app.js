@@ -154,18 +154,49 @@
     zoomTo(ZOOM.level * factor, e.clientX - r.left, e.clientY - r.top);
   }, { passive: false });
 
+  const activePointers = new Map();
   let drag = null;
+  let pinch = null; // { dist, level, fx, fy }
+
   mapWrap.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;
-    if (e.target.closest('.pin-group')) return;
     if (e.target.closest('.zoom-ctrl')) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    mapWrap.setPointerCapture(e.pointerId);
+
+    if (activePointers.size >= 2) {
+      // Switch to pinch-to-zoom mode
+      drag = null;
+      document.body.classList.remove('panning');
+      const pts = [...activePointers.values()];
+      const r = mapWrap.getBoundingClientRect();
+      pinch = {
+        dist:  Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y),
+        level: ZOOM.level,
+        fx:    (pts[0].x + pts[1].x) / 2 - r.left,
+        fy:    (pts[0].y + pts[1].y) / 2 - r.top,
+      };
+      return;
+    }
+
+    // Single pointer — start drag
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest('.pin-group')) return;
     if (document.body.classList.contains('add-mode')) return;
     if (ZOOM.level <= ZOOM.min + 0.001) return;
     drag = { x0: e.clientX, y0: e.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
-    mapWrap.setPointerCapture(e.pointerId);
     document.body.classList.add('panning');
   });
+
   mapWrap.addEventListener('pointermove', e => {
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointers.size >= 2 && pinch) {
+      const pts = [...activePointers.values()];
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      zoomTo(pinch.level * (dist / pinch.dist), pinch.fx, pinch.fy);
+      return;
+    }
+
     if (!drag) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
@@ -173,10 +204,14 @@
     ZOOM.ty = drag.ty0 + dy;
     applyTransform();
   });
+
   function endDrag(e) {
-    if (!drag) return;
+    activePointers.delete(e.pointerId);
     try { mapWrap.releasePointerCapture(e.pointerId); } catch {}
-    const wasMoved = drag.moved;
+    if (activePointers.size < 2) pinch = null;
+    if (activePointers.size > 0) return;
+
+    const wasMoved = drag?.moved;
     drag = null;
     document.body.classList.remove('panning');
     if (wasMoved) {
@@ -184,6 +219,7 @@
       window.addEventListener('click', stop, { capture: true, once: true });
     }
   }
+
   mapWrap.addEventListener('pointerup',     endDrag);
   mapWrap.addEventListener('pointercancel', endDrag);
 
