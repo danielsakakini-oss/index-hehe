@@ -217,12 +217,19 @@
     tooltip.classList.add('show');
   }
 
-  function hideTooltip() { tooltip.classList.remove('show'); }
+  function hideTooltip() {
+    tooltip.classList.remove('show', 'faded');
+    clearTimeout(tooltipFadeTimer);
+  }
 
+  let tooltipFadeTimer = null;
   document.addEventListener('mousemove', e => {
     if (tooltip.classList.contains('show')) {
       tooltip.style.left = e.clientX + 'px';
       tooltip.style.top  = e.clientY + 'px';
+      tooltip.classList.remove('faded');
+      clearTimeout(tooltipFadeTimer);
+      tooltipFadeTimer = setTimeout(() => tooltip.classList.add('faded'), 2000);
     }
   });
 
@@ -447,8 +454,6 @@
     fRadius.value  = pin.radius  || T.defaultRadius;
     fDelete.style.display = isNew ? 'none' : 'inline-block';
     fSaveErr.style.display = 'none';
-    document.body.classList.remove('add-mode');
-    btnAdd.classList.remove('active');
     modalVeil.classList.add('show');
     setTimeout(() => fCountry.focus(), 50);
   }
