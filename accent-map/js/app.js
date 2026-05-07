@@ -598,16 +598,10 @@
   // ============================================================
   //  Intro overlay (shown once per session)
   // ============================================================
-  localStorage.removeItem('accent-map.intro-seen'); // clear legacy key from v1
+  localStorage.removeItem('accent-map.intro-seen');
+  sessionStorage.removeItem(INTRO_KEY);
   const introEl = $('#intro');
-  if (sessionStorage.getItem(INTRO_KEY)) {
-    introEl.remove();
-  } else {
-    $('#introGo').addEventListener('click', () => {
-      sessionStorage.setItem(INTRO_KEY, '1');
-      introEl.remove();
-    });
-  }
+  $('#introGo').addEventListener('click', () => introEl.remove());
 
   // ============================================================
   //  Apply display config
