@@ -484,11 +484,14 @@
       if (editorState.isNew) {
         if (!pin.country && !pin.audio) { closeModal(); return; }
         await createPinAPI(pin);
+        pins = [...pins, pin];
       } else {
         await updatePinAPI(pin);
+        pins = pins.map(p => p.id === pin.id ? pin : p);
       }
-      await reloadPins();
+      renderPins();
       closeModal();
+      reloadPins().catch(() => {}); // background sync
     } catch (e) {
       fSaveErr.textContent   = e.message || 'Save failed.';
       fSaveErr.style.display = 'block';
@@ -505,8 +508,10 @@
     fSaveErr.style.display = 'none';
     try {
       await deletePinAPI(editorState.item.id);
-      await reloadPins();
+      pins = pins.filter(p => p.id !== editorState.item.id);
+      renderPins();
       closeModal();
+      reloadPins().catch(() => {}); // background sync
     } catch (e) {
       fSaveErr.textContent   = e.message || 'Delete failed.';
       fSaveErr.style.display = 'block';
@@ -516,11 +521,8 @@
   });
 
   // ============================================================
-  //  Help panel + reset (admin only)
+  //  Reset (admin only)
   // ============================================================
-  $('#btnHelp').addEventListener('click', () => $('#helpPanel').classList.toggle('show'));
-  $('#helpClose').addEventListener('click', () => $('#helpPanel').classList.remove('show'));
-
   $('#btnReset').addEventListener('click', async () => {
     if (!confirm('Delete all pins permanently? This cannot be undone.')) return;
     try {

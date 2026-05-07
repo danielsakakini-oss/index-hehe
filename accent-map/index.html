@@ -348,7 +348,6 @@
 <footer class="site">
   <div class="controls admin-only">
     <button id="btnAdd">＋ add an accent</button>
-    <button id="btnHelp">how this works</button>
     <button id="btnReset">reset all pins</button>
   </div>
   <div class="signoff">
@@ -360,19 +359,6 @@
 </footer>
 
 <!-- Help panel (admin only) -->
-<aside class="help admin-only" id="helpPanel">
-  <button class="close" id="helpClose" aria-label="close">×</button>
-  <h3>Adding audio via R2</h3>
-  <p style="margin-top:0;color:var(--muted);font-size:13px">Upload clips to Cloudflare R2, paste the public URL into a pin.</p>
-  <ol>
-    <li>In R2, make the bucket <strong>public</strong> (or connect a custom domain)</li>
-    <li>Upload your <code>.mp3</code>. Public URL looks like:<br><code>https://pub-xxx.r2.dev/uk.mp3</code></li>
-    <li>Add this CORS rule to the bucket so audio plays in-browser:<br>
-      <code>AllowedOrigins: ["https://danielsakakini.com"]<br>AllowedMethods: ["GET"]</code>
-    </li>
-    <li>Double-click any pin to attach a URL, or use <em>＋ add an accent</em></li>
-  </ol>
-</aside>
 
 <!-- Pin editor modal (admin only) -->
 <div class="modal-veil" id="modalVeil">
