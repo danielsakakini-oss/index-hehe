@@ -197,31 +197,59 @@
   mapWrap.addEventListener('pointerup',     endDrag);
   mapWrap.addEventListener('pointercancel', endDrag);
 
-  // Pinch-to-zoom via Touch Events (reliable on iOS Safari)
+  // ---- Pinch-to-zoom (Google Maps style) ----
+  // Must be passive:false so we can call preventDefault() and stop
+  // iOS Safari from intercepting the gesture as a native page zoom.
+  // On each move we recompute the full transform from the snapshot
+  // taken at touchstart — no drift, dynamic focal point.
   let pinch = null;
 
   mapWrap.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
+      e.preventDefault();
       drag = null;
       document.body.classList.remove('panning');
       const t0 = e.touches[0], t1 = e.touches[1];
       const r  = mapWrap.getBoundingClientRect();
       pinch = {
-        dist:  Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY),
-        level: ZOOM.level,
-        fx:    (t0.clientX + t1.clientX) / 2 - r.left,
-        fy:    (t0.clientY + t1.clientY) / 2 - r.top,
+        dist:   Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY),
+        level0: ZOOM.level,
+        tx0:    ZOOM.tx,
+        ty0:    ZOOM.ty,
+        // initial midpoint relative to mapWrap
+        mx0:    (t0.clientX + t1.clientX) / 2 - r.left,
+        my0:    (t0.clientY + t1.clientY) / 2 - r.top,
       };
     }
-  }, { passive: true });
+  }, { passive: false });
 
   mapWrap.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinch) {
+      e.preventDefault();
       const t0 = e.touches[0], t1 = e.touches[1];
-      const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-      zoomTo(pinch.level * (dist / pinch.dist), pinch.fx, pinch.fy);
+      const r  = mapWrap.getBoundingClientRect();
+
+      const curDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      // current midpoint relative to mapWrap
+      const curMx   = (t0.clientX + t1.clientX) / 2 - r.left;
+      const curMy   = (t0.clientY + t1.clientY) / 2 - r.top;
+
+      const newLevel = Math.max(ZOOM.min, Math.min(ZOOM.max, pinch.level0 * (curDist / pinch.dist)));
+      const f    = fitScale();
+      const sOld = f * pinch.level0;
+      const sNew = f * newLevel;
+
+      // Map point that was under the initial midpoint
+      const mapX = (pinch.mx0 - pinch.tx0) / sOld;
+      const mapY = (pinch.my0 - pinch.ty0) / sOld;
+
+      // Place that map point under the current midpoint (pan + zoom together)
+      ZOOM.level = newLevel;
+      ZOOM.tx    = curMx - mapX * sNew;
+      ZOOM.ty    = curMy - mapY * sNew;
+      applyTransform();
     }
-  }, { passive: true });
+  }, { passive: false });
 
   mapWrap.addEventListener('touchend',    e => { if (e.touches.length < 2) pinch = null; }, { passive: true });
   mapWrap.addEventListener('touchcancel', () => { pinch = null; },                           { passive: true });
