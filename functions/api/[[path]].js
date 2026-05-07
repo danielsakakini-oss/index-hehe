@@ -47,13 +47,26 @@ export async function onRequest(context) {
     return handleCalendarFeed(env);
   }
 
+  // Accent map — GET is public, mutations require admin
+  if (path === 'accent-auth' && request.method === 'POST') {
+    return handleAccentAuth(request);
+  }
+  if (path === 'accent-pins' && request.method === 'GET') {
+    return handleAccentPinsGet(env);
+  }
+
   const role = verifyPassword(request);
   if (!role) {
     return jsonResponse({ error: 'Unauthorized' }, 401);
   }
 
   try {
-    if (path === 'events') {
+    if (path === 'accent-pins') {
+      return handleAccentPinsPost(request, env, role);
+    } else if (path.startsWith('accent-pins/')) {
+      const id = path.split('/')[1];
+      return handleAccentPin(request, env, role, id);
+    } else if (path === 'events') {
       return handleEvents(request, env, role);
     } else if (path.startsWith('events/')) {
       const id = path.split('/')[1];
@@ -208,6 +221,62 @@ async function handleUsers(request, env, role) {
     users.push(user);
     await env.STEW_KV.put('users', JSON.stringify(users));
     return jsonResponse(user, 201);
+  }
+
+  return jsonResponse({ error: 'Method not allowed' }, 405);
+}
+
+// ============================================================
+//  Accent map handlers
+// ============================================================
+
+function handleAccentAuth(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return jsonResponse({ error: 'Missing credentials' }, 401);
+  }
+  const password = authHeader.substring(7);
+  if (password === ADMIN_PASSWORD) {
+    return jsonResponse({ role: 'admin' });
+  }
+  return jsonResponse({ error: 'Invalid password' }, 401);
+}
+
+async function handleAccentPinsGet(env) {
+  const data = await env.STEW_KV.get('accent-pins');
+  const pins = data ? JSON.parse(data) : [];
+  return jsonResponse(pins);
+}
+
+async function handleAccentPinsPost(request, env, role) {
+  if (role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403);
+  if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+  const pin = await request.json();
+  const data = await env.STEW_KV.get('accent-pins');
+  const pins = data ? JSON.parse(data) : [];
+  pins.push(pin);
+  await env.STEW_KV.put('accent-pins', JSON.stringify(pins));
+  return jsonResponse(pin, 201);
+}
+
+async function handleAccentPin(request, env, role, id) {
+  if (role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403);
+  const data = await env.STEW_KV.get('accent-pins');
+  const pins = data ? JSON.parse(data) : [];
+
+  if (request.method === 'PUT') {
+    const updates = await request.json();
+    const idx = pins.findIndex(p => p.id === id);
+    if (idx === -1) return jsonResponse({ error: 'Pin not found' }, 404);
+    pins[idx] = { ...pins[idx], ...updates };
+    await env.STEW_KV.put('accent-pins', JSON.stringify(pins));
+    return jsonResponse(pins[idx]);
+  }
+
+  if (request.method === 'DELETE') {
+    const filtered = pins.filter(p => p.id !== id);
+    await env.STEW_KV.put('accent-pins', JSON.stringify(filtered));
+    return jsonResponse({ success: true });
   }
 
   return jsonResponse({ error: 'Method not allowed' }, 405);
