@@ -163,9 +163,16 @@
 
         .social-links {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 0.5rem;
+        }
+
+        .social-links-row {
+            display: flex;
             justify-content: center;
             gap: 2.5rem;
-            padding-top: 0.5rem;
         }
 
         .social-links a {
@@ -238,6 +245,10 @@
             }
 
             .social-links {
+                gap: 0.9rem;
+            }
+
+            .social-links-row {
                 gap: 2rem;
             }
 
@@ -305,10 +316,14 @@
             <div class="divider"></div>
 
             <div class="social-links">
-                <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-                <a href="mailto:danielsakakini@gmail.com">Email</a>
-                <a href="https://danielsakakini.substack.com" target="_blank">Substack</a>
-                <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
+                <div class="social-links-row">
+                    <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+                    <a href="mailto:danielsakakini@gmail.com">Email</a>
+                </div>
+                <div class="social-links-row">
+                    <a href="https://danielsakakini.substack.com" target="_blank">Substack</a>
+                    <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
+                </div>
             </div>
         </div>
     </div>
