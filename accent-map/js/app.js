@@ -404,11 +404,11 @@
   $('#emptyAdd').addEventListener('click', () => toggleAddMode(true));
 
   function clientToSvg(clientX, clientY) {
-    const pt  = svg.createSVGPoint();
-    pt.x = clientX; pt.y = clientY;
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return { x: 0, y: 0 };
-    return pt.matrixTransform(ctm.inverse());
+    const rect = mapZoom.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) / rect.width  * MAP_W,
+      y: (clientY - rect.top)  / rect.height * MAP_H,
+    };
   }
 
   mapWrap.addEventListener('click', e => {
