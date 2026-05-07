@@ -605,6 +605,7 @@
   // ============================================================
   //  Intro overlay (shown once per session)
   // ============================================================
+  localStorage.removeItem('accent-map.intro-seen'); // clear legacy key from v1
   const introEl = $('#intro');
   if (sessionStorage.getItem(INTRO_KEY)) {
     introEl.remove();
