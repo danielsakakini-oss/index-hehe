@@ -167,14 +167,16 @@
   /* ---- tooltip ---- */
   #tooltip {
     position: fixed; pointer-events: none; z-index: 50;
-    background: var(--paper); border: 1px solid var(--ink); border-radius: 2px;
+    background: rgba(253, 252, 248, 0.82); border: 1px solid var(--ink); border-radius: 2px;
     padding: 10px 14px; font-family: inherit;
     box-shadow: 4px 4px 0 var(--ink);
     transform: translate(-50%, calc(-100% - 14px));
     opacity: 0; transition: opacity 120ms ease;
     max-width: 280px;
+    backdrop-filter: blur(4px);
   }
   #tooltip.show { opacity: 1; }
+  #tooltip.show.faded { opacity: 0.08; transition: opacity 600ms ease; }
   #tooltip .country { font-style: italic; font-size: 13px; color: var(--muted); text-transform: lowercase; letter-spacing: 0.02em; }
   #tooltip .accent { font-size: 18px; margin-top: 2px; line-height: 1.2; }
   #tooltip .state { margin-top: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--hot); display: flex; align-items: center; gap: 6px; }
