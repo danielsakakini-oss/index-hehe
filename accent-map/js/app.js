@@ -55,6 +55,11 @@
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
     if (adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
     const res = await fetch(`${API}${path}`, { ...options, headers });
+    if (res.status === 401) {
+      clearAdminMode();
+      openAdminModal();
+      throw new Error('Session expired — please log in again.');
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));
       throw new Error(err.error || res.statusText);

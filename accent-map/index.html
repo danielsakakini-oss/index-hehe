@@ -365,6 +365,8 @@
     <h2 id="modalTitle">Add an accent</h2>
     <div class="sub" id="modalSub">Drop a pin and connect a Cloudflare R2 audio file.</div>
 
+    <div class="modal-err" id="fSaveErr"></div>
+
     <label for="fCountry">Country / region</label>
     <input type="text" id="fCountry" placeholder="e.g. Lebanon" autocomplete="off" />
 
@@ -378,8 +380,6 @@
     <label for="fRadius">Zone radius <span style="text-transform:none;color:var(--muted)">(map pixels)</span></label>
     <input type="number" id="fRadius" min="20" max="600" step="5" value="60" />
     <div class="hint">The invisible hover zone around the pin. Larger = easier to hit.</div>
-
-    <div class="modal-err" id="fSaveErr"></div>
 
     <div class="actions">
       <div class="left-actions">
@@ -424,6 +424,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>
