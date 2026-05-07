@@ -520,18 +520,6 @@
     }
   });
 
-  // ============================================================
-  //  Reset (admin only)
-  // ============================================================
-  $('#btnReset').addEventListener('click', async () => {
-    if (!confirm('Delete all pins permanently? This cannot be undone.')) return;
-    try {
-      await Promise.all(pins.map(p => deletePinAPI(p.id)));
-      await reloadPins();
-    } catch (e) {
-      alert('Reset failed: ' + e.message);
-    }
-  });
 
   // ============================================================
   //  Admin login modal
