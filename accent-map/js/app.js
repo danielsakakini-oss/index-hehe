@@ -4,7 +4,7 @@
   // ============================================================
   const API          = '/api';
   const SESSION_KEY  = 'accent-map.admin-token';
-  const INTRO_KEY    = 'accent-map.intro-seen';
+  const INTRO_KEY    = 'accent-map.intro-seen-session';
 
   // Hardcoded display values (no tweaks panel in production)
   const T = {
@@ -603,17 +603,15 @@
   });
 
   // ============================================================
-  //  Intro overlay (shown once per browser)
+  //  Intro overlay (shown once per session)
   // ============================================================
   const introEl = $('#intro');
-  if (localStorage.getItem(INTRO_KEY)) {
+  if (sessionStorage.getItem(INTRO_KEY)) {
     introEl.remove();
   } else {
     $('#introGo').addEventListener('click', () => {
-      localStorage.setItem(INTRO_KEY, '1');
-      introEl.style.transition = 'opacity 400ms ease';
-      introEl.style.opacity    = '0';
-      setTimeout(() => introEl.remove(), 420);
+      sessionStorage.setItem(INTRO_KEY, '1');
+      introEl.remove();
     });
   }
 
