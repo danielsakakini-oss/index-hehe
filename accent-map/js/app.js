@@ -232,8 +232,12 @@
     const rect = mapZoom.getBoundingClientRect();
     const svgX = (cx - rect.left) / rect.width  * MAP_W;
     const svgY = (cy - rect.top)  / rect.height * MAP_H;
+    // On mobile the default 60-unit zone maps to ~11px on screen at default zoom —
+    // too small to tap reliably. Enforce a 22px minimum screen-radius hit target.
+    const s = rect.width / MAP_W; // screen px per SVG unit (= fitScale * ZOOM.level)
+    const minR = isMobile ? 22 / s : 0; // minimum hit radius in SVG units
     for (const pin of pins) {
-      const r = pin.radius || T.defaultRadius;
+      const r = Math.max(pin.radius || T.defaultRadius, minR);
       if (Math.hypot(svgX - pin.x, svgY - pin.y) <= r) return pin;
     }
     return null;
