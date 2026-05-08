@@ -16,8 +16,11 @@
     fadeMap       : true,
     mapOpacity    : 69,
     pinColor      : '#e8413a',
-    pinSize       : window.matchMedia('(max-width: 720px)').matches ? 20 : 14,
+    pinSize       : 14,
   };
+
+  // Detect mobile once at load — used for dot-size scaling
+  const isMobile = window.matchMedia('(max-width: 720px)').matches;
 
   // ============================================================
   //  DOM refs
@@ -136,7 +139,8 @@
       const halo = g.querySelector('.pin-halo');
       const zone = g.querySelector('.pin-zone');
       const lbl  = g.querySelector('.pin-label');
-      if (dot)  { dot.setAttribute('r', String(T.pinSize * inv)); dot.style.strokeWidth = String(2.5 * inv); }
+      const dotR = T.pinSize * (isMobile ? 2.2 : 1) * inv;
+      if (dot)  { dot.setAttribute('r', String(dotR)); dot.style.strokeWidth = String(2.5 * inv); }
       if (halo) halo.setAttribute('r', String(T.pinSize * 1.7 * inv));
       if (zone) zone.setAttribute('r', String((pin?.radius || T.defaultRadius) * inv));
       if (lbl && pin) lbl.setAttribute('y', String(pin.y - (T.pinSize * 1.7 + 8) * inv));
@@ -248,6 +252,7 @@
           return; // don't start a pan
         }
       }
+      stopAll(); // tapped blank map — stop any playing audio
       if (ZOOM.level <= ZOOM.min + 0.001) return;
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
