@@ -608,6 +608,8 @@
     fAudio.value   = pin.audio   || '';
     fRadius.value  = pin.radius  || T.defaultRadius;
     fDelete.style.display = isNew ? 'none' : 'inline-block';
+    fSave.disabled   = false;
+    fDelete.disabled = false;
     fSaveErr.style.display = 'none';
     modalVeil.classList.add('show');
     setTimeout(() => fCountry.focus(), 50);
