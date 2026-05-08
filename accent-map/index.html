@@ -96,8 +96,7 @@
 
   /* ---- zoom controls ---- */
   .zoom-ctrl {
-    position: fixed; right: 24px; top: 50%;
-    transform: translateY(-50%);
+    position: fixed; right: 24px; bottom: 48px;
     z-index: 35;
     display: flex; flex-direction: column;
     background: var(--paper);
@@ -341,6 +340,22 @@
     .help { width: calc(100vw - 32px); right: 16px; top: 110px; }
     .intro-card h1 { font-size: 40px; }
     body.add-mode::after { white-space: normal; text-align: center; width: calc(100vw - 64px); }
+
+    /* Accent list — smaller on mobile */
+    .accents-list {
+      width: 152px; max-height: 200px;
+      left: 12px; bottom: 40px;
+    }
+    .accents-list-title { font-size: 9px; padding: 6px 10px 5px; letter-spacing: 0.06em; }
+    .accents-list-item { padding: 5px 10px; }
+    .ali-accent { font-size: 12px; }
+    .ali-country { font-size: 9px; }
+    .ali-empty { padding: 8px 10px; font-size: 11px; }
+
+    /* Zoom bar — smaller and aligned with accent list bottom */
+    .zoom-ctrl { right: 12px; bottom: 40px; }
+    .zoom-ctrl button { width: 30px; height: 30px; font-size: 15px; }
+    .zoom-ctrl .zoom-pct { font-size: 9px; height: 20px; }
   }
 </style>
 </head>
@@ -467,6 +482,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=9"></script>
+<script src="js/app.js?v=10"></script>
 </body>
 </html>
