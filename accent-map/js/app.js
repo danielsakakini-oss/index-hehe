@@ -360,6 +360,9 @@
     audio.loop        = false;
     const p = { id, audio, current: 0, target: 1, raf: 0 };
     players.set(id, p);
+    // When audio finishes naturally, remove from players so hovering
+    // again creates a fresh instance and replays from the start.
+    audio.addEventListener('ended', () => players.delete(id));
     audio.play().catch(err => {
       console.warn('audio play failed', id, err);
       players.delete(id);
