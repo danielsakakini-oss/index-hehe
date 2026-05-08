@@ -192,6 +192,52 @@
   #tooltip .eq i:nth-child(4) { height: 75%; animation-delay: .36s; }
   @keyframes eq { 0%,100% { transform: scaleY(0.4); transform-origin: bottom; } 50% { transform: scaleY(1); } }
 
+  /* ---- pin flash ---- */
+  @keyframes pinFlash {
+    0%, 100% { transform: scale(1); }
+    40%       { transform: scale(2.4); fill: #ff7c5c; }
+  }
+  .pin-dot.flashing { animation: pinFlash 0.5s ease; }
+
+  /* ---- accent list panel ---- */
+  .accent-panel {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+    background: rgba(253, 252, 248, 0.97);
+    border-right: 1px solid var(--ink);
+    box-shadow: 6px 0 0 rgba(28,26,22,0.06);
+    z-index: 36;
+    display: flex; flex-direction: column;
+    transform: translateX(calc(-100% - 8px));
+    transition: transform 240ms cubic-bezier(.3,.7,.4,1);
+    backdrop-filter: blur(8px);
+  }
+  .accent-panel.open { transform: translateX(0); }
+  .accent-panel-title {
+    padding: 68px 18px 14px;
+    font-style: italic; font-size: 20px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .accent-panel-list { overflow-y: auto; flex: 1; }
+  .accent-panel-item {
+    padding: 9px 18px; cursor: pointer;
+    border-bottom: 1px solid rgba(28,26,22,0.06);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .accent-panel-item:hover { background: rgba(28,26,22,0.05); }
+  .apl-accent { font-size: 15px; }
+  .apl-country { font-size: 12px; color: var(--muted); font-style: italic; }
+  .panel-toggle {
+    position: fixed; left: 18px; bottom: 18px; z-index: 40;
+    background: var(--paper); border: 1px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    width: 34px; height: 34px; border-radius: 2px;
+    font-size: 18px; cursor: pointer;
+    display: grid; place-items: center;
+    color: var(--ink); font-family: inherit;
+  }
+  .panel-toggle:hover, .panel-toggle.active { background: var(--ink); color: var(--paper); }
+
   /* ---- add mode toast ---- */
   body.add-mode::after {
     content: "Click anywhere on the map to drop a new accent pin · ESC to cancel";
@@ -343,8 +389,8 @@
 </div>
 
 <div id="tooltip">
-  <div class="country">—</div>
   <div class="accent">—</div>
+  <div class="country">—</div>
   <div class="state dim" id="ttState">—</div>
 </div>
 
@@ -417,6 +463,13 @@
   </div>
 </div>
 
+<!-- Accent list panel -->
+<div class="accent-panel" id="accentPanel">
+  <div class="accent-panel-title">All accents</div>
+  <div class="accent-panel-list" id="accentList"></div>
+</div>
+<button class="panel-toggle" id="panelToggle" title="All accents">☰</button>
+
 <!-- Intro overlay -->
 <div class="intro" id="intro">
   <div class="intro-card">
@@ -427,6 +480,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=4"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>
