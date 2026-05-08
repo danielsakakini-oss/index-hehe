@@ -124,6 +124,23 @@
     const zin  = $('#zoomIn'), zout = $('#zoomOut');
     if (zin)  zin.disabled  = ZOOM.level >= ZOOM.max - 0.001;
     if (zout) zout.disabled = ZOOM.level <= ZOOM.min + 0.001;
+    updatePinScales();
+  }
+
+  // Keep pins a constant screen size regardless of zoom level
+  function updatePinScales() {
+    const inv = 1 / ZOOM.level;
+    pinsLayer.querySelectorAll('.pin-group').forEach(g => {
+      const pin  = pins.find(p => p.id === g.dataset.id);
+      const dot  = g.querySelector('.pin-dot');
+      const halo = g.querySelector('.pin-halo');
+      const zone = g.querySelector('.pin-zone');
+      const lbl  = g.querySelector('.pin-label');
+      if (dot)  dot.setAttribute('r',  String(T.pinSize * inv));
+      if (halo) halo.setAttribute('r', String(T.pinSize * 1.7 * inv));
+      if (zone) zone.setAttribute('r', String((pin?.radius || T.defaultRadius) * inv));
+      if (lbl && pin) lbl.setAttribute('y', String(pin.y - (T.pinSize * 1.7 + 8) * inv));
+    });
   }
 
   function zoomTo(newLevel, focalX, focalY, animate = false) {
