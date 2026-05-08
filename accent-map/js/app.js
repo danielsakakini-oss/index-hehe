@@ -192,26 +192,50 @@
   });
 
   // ============================================================
-  //  Pan + Pinch-to-zoom (touch) — Touch Events, owns the layer
+  //  Pan + Pinch-to-zoom + Tap-to-play (touch)
   //
-  //  We call e.preventDefault() on EVERY touchstart and touchmove,
-  //  handing full gesture control to JS. This is the only reliable
-  //  way to stop iOS Safari from intercepting the pinch as a native
-  //  page zoom — conditional preventDefault (only on 2-finger) fires
-  //  too late; iOS commits to a native gesture on the first touch.
+  //  We call e.preventDefault() unconditionally on touchstart and
+  //  touchmove so iOS Safari never claims the gesture as a native
+  //  page zoom (conditional preventDefault fires too late).
+  //
+  //  Pin tap detection uses a pure-JS hit test (client → SVG coords,
+  //  distance check against each pin's centre/radius). This bypasses
+  //  iOS Safari's broken SVG touch-event routing on transparent fills.
   // ============================================================
-  let pinch = null;
+  let pinch   = null;
+  let touchTap = null; // { pin, el, x, y } when finger down on a pin
+
+  // Convert client coords to SVG-space and return the pin underneath,
+  // or null. No DOM involvement — pure maths.
+  function pinAtClientPoint(cx, cy) {
+    const rect = mapZoom.getBoundingClientRect();
+    const svgX = (cx - rect.left) / rect.width  * MAP_W;
+    const svgY = (cy - rect.top)  / rect.height * MAP_H;
+    for (const pin of pins) {
+      const r = pin.radius || T.defaultRadius;
+      if (Math.hypot(svgX - pin.x, svgY - pin.y) <= r) return pin;
+    }
+    return null;
+  }
 
   mapWrap.addEventListener('touchstart', e => {
-    e.preventDefault(); // must be unconditional — see comment above
+    e.preventDefault();
 
     if (e.touches.length === 1) {
-      if (document.body.classList.contains('add-mode')) return;
-      if (ZOOM.level <= ZOOM.min + 0.001) return;
       const t = e.touches[0];
+      if (!document.body.classList.contains('add-mode')) {
+        const hit = pinAtClientPoint(t.clientX, t.clientY);
+        if (hit) {
+          const el = pinsLayer.querySelector(`[data-id="${hit.id}"]`);
+          touchTap = { pin: hit, el, x: t.clientX, y: t.clientY };
+          return; // don't start a pan
+        }
+      }
+      if (ZOOM.level <= ZOOM.min + 0.001) return;
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
     } else if (e.touches.length === 2) {
+      touchTap = null;
       drag = null;
       document.body.classList.remove('panning');
       const t0 = e.touches[0], t1 = e.touches[1];
@@ -228,13 +252,23 @@
   mapWrap.addEventListener('touchmove', e => {
     e.preventDefault();
 
-    if (e.touches.length === 1 && drag) {
-      const t  = e.touches[0];
-      const dx = t.clientX - drag.x0, dy = t.clientY - drag.y0;
-      if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
-      ZOOM.tx = drag.tx0 + dx;
-      ZOOM.ty = drag.ty0 + dy;
-      applyTransform();
+    if (e.touches.length === 1) {
+      if (touchTap) {
+        // If finger drifts >12px off the pin, convert to a pan
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - touchTap.x, t.clientY - touchTap.y) >= 12) {
+          touchTap = null;
+          drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
+          document.body.classList.add('panning');
+        }
+      } else if (drag) {
+        const t  = e.touches[0];
+        const dx = t.clientX - drag.x0, dy = t.clientY - drag.y0;
+        if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+        ZOOM.tx = drag.tx0 + dx;
+        ZOOM.ty = drag.ty0 + dy;
+        applyTransform();
+      }
     } else if (e.touches.length === 2 && pinch) {
       const t0 = e.touches[0], t1 = e.touches[1];
       const r  = mapWrap.getBoundingClientRect();
@@ -256,6 +290,11 @@
 
   mapWrap.addEventListener('touchend', e => {
     if (e.touches.length === 0) {
+      // Fire pin if this was a clean tap
+      if (touchTap) {
+        onPinEnter(touchTap.pin, touchTap.el || pinsLayer);
+        touchTap = null;
+      }
       const wasMoved = drag?.moved;
       drag = null; pinch = null;
       document.body.classList.remove('panning');
@@ -269,7 +308,7 @@
   }, { passive: true });
 
   mapWrap.addEventListener('touchcancel', () => {
-    drag = null; pinch = null;
+    drag = null; pinch = null; touchTap = null;
     document.body.classList.remove('panning');
   }, { passive: true });
 
@@ -424,22 +463,6 @@
 
       g.addEventListener('mouseenter', () => onPinEnter(pin, g));
       g.addEventListener('mouseleave', () => onPinLeave(pin, g));
-
-      // Touch: tap to play. stopPropagation prevents the mapWrap
-      // touchstart from treating this touch as a pan gesture.
-      let tapOrigin = null;
-      g.addEventListener('touchstart', e => {
-        if (document.body.classList.contains('add-mode')) return;
-        tapOrigin = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        e.stopPropagation();
-      }, { passive: true });
-      g.addEventListener('touchend', e => {
-        if (!tapOrigin) return;
-        const t = e.changedTouches[0];
-        const moved = Math.hypot(t.clientX - tapOrigin.x, t.clientY - tapOrigin.y);
-        tapOrigin = null;
-        if (moved < 12) onPinEnter(pin, g); // clean tap, not a drag
-      }, { passive: true });
 
       if (isAdmin()) {
         g.addEventListener('dblclick', e => { e.preventDefault(); openEditor(pin); });
