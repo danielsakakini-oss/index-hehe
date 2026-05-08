@@ -16,7 +16,7 @@
     fadeMap       : true,
     mapOpacity    : 69,
     pinColor      : '#e8413a',
-    pinSize       : 14,
+    pinSize       : window.matchMedia('(max-width: 720px)').matches ? 20 : 14,
   };
 
   // ============================================================
