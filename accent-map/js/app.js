@@ -427,6 +427,22 @@
       g.addEventListener('mouseenter', () => onPinEnter(pin, g));
       g.addEventListener('mouseleave', () => onPinLeave(pin, g));
 
+      // Touch: tap to play. stopPropagation prevents the mapWrap
+      // touchstart from treating this touch as a pan gesture.
+      let tapOrigin = null;
+      g.addEventListener('touchstart', e => {
+        if (document.body.classList.contains('add-mode')) return;
+        tapOrigin = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        e.stopPropagation();
+      }, { passive: true });
+      g.addEventListener('touchend', e => {
+        if (!tapOrigin) return;
+        const t = e.changedTouches[0];
+        const moved = Math.hypot(t.clientX - tapOrigin.x, t.clientY - tapOrigin.y);
+        tapOrigin = null;
+        if (moved < 12) onPinEnter(pin, g); // clean tap, not a drag
+      }, { passive: true });
+
       if (isAdmin()) {
         g.addEventListener('dblclick', e => { e.preventDefault(); openEditor(pin); });
         g.addEventListener('click', e => {
