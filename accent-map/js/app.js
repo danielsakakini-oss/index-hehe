@@ -154,38 +154,163 @@
     zoomTo(ZOOM.level * factor, e.clientX - r.left, e.clientY - r.top);
   }, { passive: false });
 
+  // ============================================================
+  //  Pan (mouse) — Pointer Events, mouse only
+  // ============================================================
   let drag = null;
+
   mapWrap.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse') return;
     if (e.button !== 0) return;
-    if (e.target.closest('.pin-group')) return;
-    if (e.target.closest('.zoom-ctrl')) return;
+    if (e.target.closest('.zoom-ctrl') || e.target.closest('.pin-group')) return;
     if (document.body.classList.contains('add-mode')) return;
     if (ZOOM.level <= ZOOM.min + 0.001) return;
-    drag = { x0: e.clientX, y0: e.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
     mapWrap.setPointerCapture(e.pointerId);
+    drag = { x0: e.clientX, y0: e.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
     document.body.classList.add('panning');
   });
+
   mapWrap.addEventListener('pointermove', e => {
-    if (!drag) return;
+    if (e.pointerType !== 'mouse' || !drag) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
     ZOOM.tx = drag.tx0 + dx;
     ZOOM.ty = drag.ty0 + dy;
     applyTransform();
   });
-  function endDrag(e) {
-    if (!drag) return;
+
+  mapWrap.addEventListener('pointerup', e => {
+    if (e.pointerType !== 'mouse') return;
     try { mapWrap.releasePointerCapture(e.pointerId); } catch {}
-    const wasMoved = drag.moved;
+    const wasMoved = drag?.moved;
     drag = null;
     document.body.classList.remove('panning');
     if (wasMoved) {
       const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
       window.addEventListener('click', stop, { capture: true, once: true });
     }
+  });
+
+  // ============================================================
+  //  Pan + Pinch-to-zoom + Tap-to-play (touch)
+  //
+  //  We call e.preventDefault() unconditionally on touchstart and
+  //  touchmove so iOS Safari never claims the gesture as a native
+  //  page zoom (conditional preventDefault fires too late).
+  //
+  //  Pin tap detection uses a pure-JS hit test (client → SVG coords,
+  //  distance check against each pin's centre/radius). This bypasses
+  //  iOS Safari's broken SVG touch-event routing on transparent fills.
+  // ============================================================
+  let pinch   = null;
+  let touchTap = null; // { pin, el, x, y } when finger down on a pin
+
+  // Convert client coords to SVG-space and return the pin underneath,
+  // or null. No DOM involvement — pure maths.
+  function pinAtClientPoint(cx, cy) {
+    const rect = mapZoom.getBoundingClientRect();
+    const svgX = (cx - rect.left) / rect.width  * MAP_W;
+    const svgY = (cy - rect.top)  / rect.height * MAP_H;
+    for (const pin of pins) {
+      const r = pin.radius || T.defaultRadius;
+      if (Math.hypot(svgX - pin.x, svgY - pin.y) <= r) return pin;
+    }
+    return null;
   }
-  mapWrap.addEventListener('pointerup',     endDrag);
-  mapWrap.addEventListener('pointercancel', endDrag);
+
+  mapWrap.addEventListener('touchstart', e => {
+    e.preventDefault();
+
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (!document.body.classList.contains('add-mode')) {
+        const hit = pinAtClientPoint(t.clientX, t.clientY);
+        if (hit) {
+          const el = pinsLayer.querySelector(`[data-id="${hit.id}"]`);
+          touchTap = { pin: hit, el, x: t.clientX, y: t.clientY };
+          return; // don't start a pan
+        }
+      }
+      if (ZOOM.level <= ZOOM.min + 0.001) return;
+      drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
+      document.body.classList.add('panning');
+    } else if (e.touches.length === 2) {
+      touchTap = null;
+      drag = null;
+      document.body.classList.remove('panning');
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const r  = mapWrap.getBoundingClientRect();
+      pinch = {
+        dist:   Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY),
+        level0: ZOOM.level, tx0: ZOOM.tx, ty0: ZOOM.ty,
+        mx0:    (t0.clientX + t1.clientX) / 2 - r.left,
+        my0:    (t0.clientY + t1.clientY) / 2 - r.top,
+      };
+    }
+  }, { passive: false });
+
+  mapWrap.addEventListener('touchmove', e => {
+    e.preventDefault();
+
+    if (e.touches.length === 1) {
+      if (touchTap) {
+        // If finger drifts >12px off the pin, convert to a pan
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - touchTap.x, t.clientY - touchTap.y) >= 12) {
+          touchTap = null;
+          drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
+          document.body.classList.add('panning');
+        }
+      } else if (drag) {
+        const t  = e.touches[0];
+        const dx = t.clientX - drag.x0, dy = t.clientY - drag.y0;
+        if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+        ZOOM.tx = drag.tx0 + dx;
+        ZOOM.ty = drag.ty0 + dy;
+        applyTransform();
+      }
+    } else if (e.touches.length === 2 && pinch) {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const r  = mapWrap.getBoundingClientRect();
+      const curDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      const curMx   = (t0.clientX + t1.clientX) / 2 - r.left;
+      const curMy   = (t0.clientY + t1.clientY) / 2 - r.top;
+      const newLevel = Math.max(ZOOM.min, Math.min(ZOOM.max, pinch.level0 * (curDist / pinch.dist)));
+      const f    = fitScale();
+      const sOld = f * pinch.level0;
+      const sNew = f * newLevel;
+      const mapX = (pinch.mx0 - pinch.tx0) / sOld;
+      const mapY = (pinch.my0 - pinch.ty0) / sOld;
+      ZOOM.level = newLevel;
+      ZOOM.tx    = curMx - mapX * sNew;
+      ZOOM.ty    = curMy - mapY * sNew;
+      applyTransform();
+    }
+  }, { passive: false });
+
+  mapWrap.addEventListener('touchend', e => {
+    if (e.touches.length === 0) {
+      // Fire pin if this was a clean tap
+      if (touchTap) {
+        onPinEnter(touchTap.pin, touchTap.el || pinsLayer);
+        touchTap = null;
+      }
+      const wasMoved = drag?.moved;
+      drag = null; pinch = null;
+      document.body.classList.remove('panning');
+      if (wasMoved) {
+        const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        window.addEventListener('click', stop, { capture: true, once: true });
+      }
+    } else if (e.touches.length === 1) {
+      pinch = null;
+    }
+  }, { passive: true });
+
+  mapWrap.addEventListener('touchcancel', () => {
+    drag = null; pinch = null; touchTap = null;
+    document.body.classList.remove('panning');
+  }, { passive: true });
 
   $('#zoomIn').addEventListener('click',    () => zoomTo(ZOOM.level * 1.5, null, null, true));
   $('#zoomOut').addEventListener('click',   () => zoomTo(ZOOM.level / 1.5, null, null, true));
@@ -224,17 +349,12 @@
 
   function hideTooltip() {
     tooltip.classList.remove('show', 'faded');
-    clearTimeout(tooltipFadeTimer);
   }
 
-  let tooltipFadeTimer = null;
   document.addEventListener('mousemove', e => {
     if (tooltip.classList.contains('show')) {
       tooltip.style.left = e.clientX + 'px';
       tooltip.style.top  = e.clientY + 'px';
-      tooltip.classList.remove('faded');
-      clearTimeout(tooltipFadeTimer);
-      tooltipFadeTimer = setTimeout(() => tooltip.classList.add('faded'), 2000);
     }
   });
 
@@ -274,6 +394,9 @@
     audio.loop        = false;
     const p = { id, audio, current: 0, target: 1, raf: 0 };
     players.set(id, p);
+    // When audio finishes naturally, remove from players so hovering
+    // again creates a fresh instance and replays from the start.
+    audio.addEventListener('ended', () => players.delete(id));
     audio.play().catch(err => {
       console.warn('audio play failed', id, err);
       players.delete(id);
@@ -599,16 +722,10 @@
   // ============================================================
   //  Intro overlay (shown once per session)
   // ============================================================
-  localStorage.removeItem('accent-map.intro-seen'); // clear legacy key from v1
+  localStorage.removeItem('accent-map.intro-seen');
+  sessionStorage.removeItem(INTRO_KEY);
   const introEl = $('#intro');
-  if (sessionStorage.getItem(INTRO_KEY)) {
-    introEl.remove();
-  } else {
-    $('#introGo').addEventListener('click', () => {
-      sessionStorage.setItem(INTRO_KEY, '1');
-      introEl.remove();
-    });
-  }
+  $('#introGo').addEventListener('click', () => introEl.remove());
 
   // ============================================================
   //  Apply display config
