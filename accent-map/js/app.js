@@ -252,12 +252,8 @@
           return; // don't start a pan
         }
       }
-      // Tapped blank map — stop audio and clean up any lingering pin state
-      // (mobile has no mouseleave so onPinLeave never fires)
+      // Tapped blank map — stop audio
       stopAll();
-      pinsLayer.querySelectorAll('.pin-group.is-active').forEach(g => g.classList.remove('is-active'));
-      document.body.classList.remove('has-hover');
-      hideTooltip();
       if (ZOOM.level <= ZOOM.min + 0.001) return;
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
@@ -537,12 +533,13 @@
   // ============================================================
   function onPinEnter(pin, el) {
     if (document.body.classList.contains('add-mode')) return;
-    // Clear any stale is-active from a previous mobile tap (no mouseleave on touch)
-    pinsLayer.querySelectorAll('.pin-group.is-active').forEach(g => g.classList.remove('is-active'));
     document.body.classList.add('has-hover');
     el.classList.add('is-active');
     showTooltip(pin.country, pin.accent, !!pin.audio);
-    fadeOutAll();
+    // iOS only plays one audio element at a time — stop immediately on mobile
+    // so the new clip isn't cancelled by a concurrent fadeout
+    if (isMobile) stopAll();
+    else fadeOutAll();
     if (pin.audio) playClip('pin:' + pin.id, pin.audio);
   }
 
