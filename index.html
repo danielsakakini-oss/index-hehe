@@ -206,16 +206,10 @@
 
         .social-links {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding-top: 0.5rem;
-        }
-
-        .social-links-row {
-            display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 2.5rem;
+            gap: 1rem 2.5rem;
+            padding-top: 0.5rem;
         }
 
         .social-links a {
@@ -302,11 +296,7 @@
             }
 
             .social-links {
-                gap: 0.9rem;
-            }
-
-            .social-links-row {
-                gap: 2rem;
+                gap: 0.8rem 1.8rem;
             }
 
             .social-links a {
@@ -342,6 +332,24 @@
 
             <div class="divider"></div>
 
+            <h2 class="section-title">Resume</h2>
+            <div class="projects-list">
+                <div class="project-item">
+                    <a href="https://www.hagenco.com" target="_blank">Hagen and Co</a>
+                    <div class="project-description">Manufacturing Consultant &middot; 2017–2019</div>
+                </div>
+                <div class="project-item">
+                    <a href="https://www.sensofar.com" target="_blank">Sensofar</a>
+                    <div class="project-description">Solutions Engineer &middot; 2020–2025</div>
+                </div>
+                <div class="project-item">
+                    <a href="https://ninenorth.io" target="_blank">Nine North</a>
+                    <div class="project-description">Head of Growth / BizDev &middot; 2025–Present</div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
             <h2 class="section-title">Projects</h2>
             <div class="projects-list">
                 <div class="project-item">
@@ -354,7 +362,9 @@
                     <div class="project-description">Join us. E pluribus stewnum</div>
                 </div>
 
-                <div class="project-category">Voice Acting</div>
+                <div class="divider" style="margin: 0.9rem auto;"></div>
+
+                <div class="project-category" style="margin-top: 0;">Voice Acting</div>
 
                 <div class="project-subitem">
                     <a href="https://podcasts.apple.com/us/podcast/i-hear-dead-people/id1704036529?i=1000641123204" target="_blank">I Hear Dead People</a>
@@ -364,23 +374,15 @@
                     <a href="accent-map/">The Accent Map</a>
                     <div class="project-description">Hover over a pin on the map to hear me do an accent from that region of the world</div>
                 </div>
-                <div class="project-subitem">
-                    <span class="project-name">The Character Map</span>
-                    <div class="project-description">Hover over a character to hear an impression or novel character</div>
-                </div>
             </div>
 
             <div class="divider"></div>
 
             <div class="social-links">
-                <div class="social-links-row">
-                    <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
-                    <a href="mailto:danielsakakini@gmail.com">Email</a>
-                </div>
-                <div class="social-links-row">
-                    <a href="https://danielsakakini.substack.com" target="_blank">Substack</a>
-                    <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
-                </div>
+                <a href="https://www.linkedin.com/in/danielsakakini/" target="_blank">LinkedIn</a>
+                <a href="mailto:danielsakakini@gmail.com">Email</a>
+                <a href="https://danielsakakini.substack.com" target="_blank">Substack</a>
+                <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
             </div>
         </div>
     </div>
