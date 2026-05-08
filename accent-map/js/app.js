@@ -16,7 +16,7 @@
     fadeMap       : true,
     mapOpacity    : 69,
     pinColor      : '#e8413a',
-    pinSize       : 11,
+    pinSize       : 14,
   };
 
   // ============================================================
@@ -407,6 +407,15 @@
   function fadeOut(id)  { const p = players.get(id); if (p) setVolumeOver(p, 0, T.fadeOutSec * 1000); }
   function fadeOutAll() { for (const id of players.keys()) fadeOut(id); }
 
+  function stopImmediate(id) {
+    const p = players.get(id);
+    if (!p) return;
+    cancelAnimationFrame(p.raf);
+    try { p.audio.pause(); p.audio.currentTime = 0; } catch {}
+    players.delete(id);
+  }
+  function stopAll() { for (const id of [...players.keys()]) stopImmediate(id); }
+
   // ============================================================
   //  Pin data + render
   // ============================================================
@@ -512,7 +521,7 @@
     el.classList.remove('is-active');
     document.body.classList.remove('has-hover');
     hideTooltip();
-    fadeOut('pin:' + pin.id);
+    stopImmediate('pin:' + pin.id);
   }
 
   // ============================================================
@@ -748,16 +757,9 @@
   boot();
 
   // ============================================================
-  //  Accent list panel
+  //  Bottom-left accent list
   // ============================================================
-  const accentPanel  = $('#accentPanel');
-  const accentListEl = $('#accentList');
-  const panelToggle  = $('#panelToggle');
-
-  panelToggle.addEventListener('click', () => {
-    const open = accentPanel.classList.toggle('open');
-    panelToggle.classList.toggle('active', open);
-  });
+  const accentsItems = $('#accentsItems');
 
   function centerOnPin(pin) {
     const f = fitScale();
@@ -772,25 +774,33 @@
   }
 
   function renderAccentList() {
+    if (!accentsItems) return;
     const sorted = [...pins]
       .filter(p => p.accent || p.country)
       .sort((a, b) => (a.accent || a.country || '').localeCompare(b.accent || b.country || ''));
-    accentListEl.innerHTML = '';
+    accentsItems.innerHTML = '';
     if (sorted.length === 0) {
-      accentListEl.innerHTML = '<div style="padding:16px 18px;color:var(--muted);font-style:italic;font-size:13px">No accents yet.</div>';
+      accentsItems.innerHTML = '<div class="ali-empty">no accents yet</div>';
       return;
     }
     sorted.forEach(pin => {
       const item = document.createElement('div');
-      item.className = 'accent-panel-item';
-      item.innerHTML = `<span class="apl-accent">${pin.accent || '(unnamed)'}</span>${pin.country ? `<span class="apl-country">${pin.country}</span>` : ''}`;
-      item.addEventListener('click', () => centerOnPin(pin));
-      accentListEl.appendChild(item);
+      item.className = 'accents-list-item';
+      item.dataset.id = pin.id;
+      item.innerHTML = `<span class="ali-accent">${pin.accent || '(unnamed)'}</span>${pin.country ? `<span class="ali-country">${pin.country}</span>` : ''}`;
+      item.addEventListener('click', () => {
+        stopAll();
+        if (pin.audio) playClip('pin:' + pin.id, pin.audio);
+        centerOnPin(pin);
+        document.querySelectorAll('.accents-list-item').forEach(i => i.classList.remove('playing'));
+        item.classList.add('playing');
+      });
+      accentsItems.appendChild(item);
     });
   }
 
   // ============================================================
-  //  Periodic sequential pin flash (every 30 s)
+  //  Sequential pin flash — first at 2 s, then every 30 s
   // ============================================================
   function flashAllSequentially() {
     const dots = [...pinsLayer.querySelectorAll('.pin-dot')];
@@ -801,5 +811,8 @@
       }, i * 180);
     });
   }
-  setInterval(flashAllSequentially, 30000);
+  setTimeout(() => {
+    flashAllSequentially();
+    setInterval(flashAllSequentially, 30000);
+  }, 2000);
 })();
