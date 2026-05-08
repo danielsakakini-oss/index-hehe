@@ -9,14 +9,14 @@
   // Hardcoded display values (no tweaks panel in production)
   const T = {
     defaultRadius : 60,
-    fadeOutSec    : 3,
+    fadeOutSec    : 0.5,
     fadeInSec     : 0.25,
     showZones     : false,
     showLabels    : true,
     fadeMap       : true,
     mapOpacity    : 69,
     pinColor      : '#e8413a',
-    pinSize       : 7,
+    pinSize       : 11,
   };
 
   // ============================================================
@@ -102,7 +102,7 @@
   mapZoom.style.width  = MAP_W + 'px';
   mapZoom.style.height = MAP_H + 'px';
 
-  const ZOOM = { min: 1, max: 6, level: 1, tx: 0, ty: 0 };
+  const ZOOM = { min: 1, max: 7, level: 1, tx: 0, ty: 0 };
 
   function fitScale() {
     return Math.min(mapWrap.clientWidth / MAP_W, mapWrap.clientHeight / MAP_H);
@@ -474,6 +474,7 @@
 
     updateEmpty();
     updateCounter();
+    renderAccentList();
   }
 
   function updateEmpty() {
@@ -745,4 +746,60 @@
   }
 
   boot();
+
+  // ============================================================
+  //  Accent list panel
+  // ============================================================
+  const accentPanel  = $('#accentPanel');
+  const accentListEl = $('#accentList');
+  const panelToggle  = $('#panelToggle');
+
+  panelToggle.addEventListener('click', () => {
+    const open = accentPanel.classList.toggle('open');
+    panelToggle.classList.toggle('active', open);
+  });
+
+  function centerOnPin(pin) {
+    const f = fitScale();
+    const targetLevel = Math.min(ZOOM.max, Math.max(3, ZOOM.level));
+    const s = f * targetLevel;
+    ZOOM.level = targetLevel;
+    ZOOM.tx = mapWrap.clientWidth  / 2 - pin.x * s;
+    ZOOM.ty = mapWrap.clientHeight / 2 - pin.y * s;
+    mapZoom.classList.add('animating');
+    applyTransform();
+    setTimeout(() => mapZoom.classList.remove('animating'), 240);
+  }
+
+  function renderAccentList() {
+    const sorted = [...pins]
+      .filter(p => p.accent || p.country)
+      .sort((a, b) => (a.accent || a.country || '').localeCompare(b.accent || b.country || ''));
+    accentListEl.innerHTML = '';
+    if (sorted.length === 0) {
+      accentListEl.innerHTML = '<div style="padding:16px 18px;color:var(--muted);font-style:italic;font-size:13px">No accents yet.</div>';
+      return;
+    }
+    sorted.forEach(pin => {
+      const item = document.createElement('div');
+      item.className = 'accent-panel-item';
+      item.innerHTML = `<span class="apl-accent">${pin.accent || '(unnamed)'}</span>${pin.country ? `<span class="apl-country">${pin.country}</span>` : ''}`;
+      item.addEventListener('click', () => centerOnPin(pin));
+      accentListEl.appendChild(item);
+    });
+  }
+
+  // ============================================================
+  //  Periodic sequential pin flash (every 30 s)
+  // ============================================================
+  function flashAllSequentially() {
+    const dots = [...pinsLayer.querySelectorAll('.pin-dot')];
+    dots.forEach((dot, i) => {
+      setTimeout(() => {
+        dot.classList.add('flashing');
+        setTimeout(() => dot.classList.remove('flashing'), 500);
+      }, i * 180);
+    });
+  }
+  setInterval(flashAllSequentially, 30000);
 })();
