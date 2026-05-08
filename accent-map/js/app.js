@@ -139,7 +139,7 @@
       const halo = g.querySelector('.pin-halo');
       const zone = g.querySelector('.pin-zone');
       const lbl  = g.querySelector('.pin-label');
-      const dotR = T.pinSize * (isMobile ? 2.2 : 1) * inv;
+      const dotR = T.pinSize * (isMobile ? 4.4 : 1) * inv;
       if (dot)  { dot.setAttribute('r', String(dotR)); dot.style.strokeWidth = String(2.5 * inv); }
       if (halo) halo.setAttribute('r', String(T.pinSize * 1.7 * inv));
       if (zone) zone.setAttribute('r', String((pin?.radius || T.defaultRadius) * inv));
@@ -252,7 +252,12 @@
           return; // don't start a pan
         }
       }
-      stopAll(); // tapped blank map — stop any playing audio
+      // Tapped blank map — stop audio and clean up any lingering pin state
+      // (mobile has no mouseleave so onPinLeave never fires)
+      stopAll();
+      pinsLayer.querySelectorAll('.pin-group.is-active').forEach(g => g.classList.remove('is-active'));
+      document.body.classList.remove('has-hover');
+      hideTooltip();
       if (ZOOM.level <= ZOOM.min + 0.001) return;
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
@@ -532,6 +537,8 @@
   // ============================================================
   function onPinEnter(pin, el) {
     if (document.body.classList.contains('add-mode')) return;
+    // Clear any stale is-active from a previous mobile tap (no mouseleave on touch)
+    pinsLayer.querySelectorAll('.pin-group.is-active').forEach(g => g.classList.remove('is-active'));
     document.body.classList.add('has-hover');
     el.classList.add('is-active');
     showTooltip(pin.country, pin.accent, !!pin.audio);
