@@ -136,7 +136,7 @@
       const halo = g.querySelector('.pin-halo');
       const zone = g.querySelector('.pin-zone');
       const lbl  = g.querySelector('.pin-label');
-      if (dot)  { dot.setAttribute('r', String(T.pinSize * inv)); dot.setAttribute('stroke-width', String(2.5 * inv)); }
+      if (dot)  { dot.setAttribute('r', String(T.pinSize * inv)); dot.style.strokeWidth = String(2.5 * inv); }
       if (halo) halo.setAttribute('r', String(T.pinSize * 1.7 * inv));
       if (zone) zone.setAttribute('r', String((pin?.radius || T.defaultRadius) * inv));
       if (lbl && pin) lbl.setAttribute('y', String(pin.y - (T.pinSize * 1.7 + 8) * inv));
