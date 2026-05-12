@@ -469,12 +469,12 @@
                 tx: t.x, ty: t.y,
                 sx: cx + Math.cos(a) * r,
                 sy: cy + Math.sin(a) * r,
-                delay: Math.random() * 350,
+                delay: Math.random() * 600,
             };
         });
 
         const start    = performance.now();
-        const duration = 1200;
+        const duration = 2200;
         const size     = Math.max(1.2, 1.6 * (dpr >= 2 ? 1 : 1));
 
         function frame(now) {
