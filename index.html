@@ -118,6 +118,14 @@
             margin-bottom: 0.5rem;
         }
 
+        /* Hide the static name from first paint so the JS particle
+           animation owns the title — no flash of rendered text before
+           it kicks in. Use opacity (not color/visibility) so the
+           computed font colour stays readable by the script. */
+        @media (prefers-reduced-motion: no-preference) {
+            .name { opacity: 0; }
+        }
+
         .divider {
             width: 60px;
             height: 1px;
@@ -397,12 +405,11 @@
     <div class="location-text">Palamos, Spain, 2024</div>
 
     <script>
-    // Particle fly-in for the name. Renders the real <h1> text to an
-    // offscreen canvas, samples non-transparent pixels as target dots,
-    // then animates those dots in from random off-screen positions.
-    // Once the assembly finishes the canvas is removed and the real
-    // <h1> fades back in — so the final look is identical to the
-    // normal Cinzel rendering (no aliasing artefacts on the final state).
+    // Particle fly-in for the name. Uses a VIEWPORT-sized canvas overlaid
+    // fixed across the whole page, so particles can be seen flying in from
+    // far away — not clipped to the tight bounding box of the <h1>.
+    // Text is sampled at the h1's real on-screen position; particles
+    // originate at random viewport coordinates and converge there.
     (async () => {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
@@ -411,38 +418,47 @@
         if (!nameEl) return;
 
         const cs   = getComputedStyle(nameEl);
+        // Snapshot the font colour NOW. getComputedStyle returns a live
+        // object, and we later mutate nameEl.style.color = 'transparent';
+        // re-reading cs.color after that would yield rgba(0,0,0,0).
+        const fontColor = cs.color;
         const text = (nameEl.textContent || '').trim().toUpperCase();
         const rect = nameEl.getBoundingClientRect();
-
-        const cw  = Math.ceil(rect.width);
-        const ch  = Math.ceil(rect.height);
-        if (cw < 10 || ch < 10) return;
+        if (rect.width < 10 || rect.height < 10) return;
 
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const vw  = window.innerWidth;
+        const vh  = window.innerHeight;
+
         const canvas = document.createElement('canvas');
-        canvas.width  = cw * dpr;
-        canvas.height = ch * dpr;
+        canvas.width  = vw * dpr;
+        canvas.height = vh * dpr;
         canvas.style.cssText =
-            'position:absolute;left:0;top:0;width:' + cw + 'px;height:' + ch + 'px;' +
-            'pointer-events:none;';
+            'position:fixed;left:0;top:0;width:' + vw + 'px;height:' + vh + 'px;' +
+            'pointer-events:none;z-index:1000;';
 
         const ctx = canvas.getContext('2d');
         ctx.scale(dpr, dpr);
         ctx.font         = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-        ctx.fillStyle    = cs.color;
+        ctx.fillStyle    = fontColor;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
         if ('letterSpacing' in ctx) ctx.letterSpacing = cs.letterSpacing;
 
-        ctx.fillText(text, cw / 2, ch / 2);
+        // Draw text where the real <h1> sits in the viewport
+        const cx = rect.left + rect.width  / 2;
+        const cy = rect.top  + rect.height / 2;
+        ctx.fillText(text, cx, cy);
 
-        // Sample non-transparent pixels as particle targets
-        const img  = ctx.getImageData(0, 0, cw * dpr, ch * dpr).data;
-        const step = Math.max(1, Math.round(dpr));
-        const W    = cw * dpr;
+        // Sample at fine resolution so the assembled dots actually trace
+        // the glyph shape. We use 1 logical pixel between samples → many
+        // small dots that, when settled, look like the real text.
+        const img  = ctx.getImageData(0, 0, vw * dpr, vh * dpr).data;
+        const step = Math.max(1, Math.round(dpr)); // 1 logical px
+        const W    = vw * dpr;
         const targets = [];
-        for (let y = 0; y < ch * dpr; y += step) {
-            for (let x = 0; x < cw * dpr; x += step) {
+        for (let y = 0; y < vh * dpr; y += step) {
+            for (let x = 0; x < vw * dpr; x += step) {
                 if (img[(y * W + x) * 4 + 3] > 180) {
                     targets.push({ x: x / dpr, y: y / dpr });
                 }
@@ -450,46 +466,54 @@
         }
         if (!targets.length) return;
 
-        ctx.clearRect(0, 0, cw, ch);
+        ctx.clearRect(0, 0, vw, vh);
 
-        // Swap real text for canvas
-        const prevColor    = nameEl.style.color;
-        const prevPosition = nameEl.style.position;
-        nameEl.style.color    = 'transparent';
-        nameEl.style.position = 'relative';
-        nameEl.appendChild(canvas);
+        // Add canvas to body. The real <h1> is already invisible via
+        // CSS (opacity:0) so we just need to reveal it at the end.
+        document.body.appendChild(canvas);
 
-        // Each particle gets a random off-canvas origin + tiny stagger
-        const cx = cw / 2, cy = ch / 2;
-        const flyDist = Math.max(cw, ch) * 1.4;
-        const particles = targets.map(t => {
-            const a = Math.random() * Math.PI * 2;
-            const r = flyDist + Math.random() * flyDist * 0.6;
-            return {
-                tx: t.x, ty: t.y,
-                sx: cx + Math.cos(a) * r,
-                sy: cy + Math.sin(a) * r,
-                delay: Math.random() * 600,
-            };
-        });
+        // Particles start LARGE so they read as discrete dots streaking
+        // across the viewport, and SHRINK to ~1 px as they arrive — so
+        // the assembled shape is a fine high-resolution match to the
+        // text glyphs, not a chunky pixel mosaic.
+        // Origins span 2× the viewport on each axis, with the viewport
+        // centred — so plenty of particles start well off-screen and
+        // fly in from further away.
+        const particles = targets.map(t => ({
+            tx: t.x, ty: t.y,
+            sx: -vw * 0.5 + Math.random() * vw * 2,
+            sy: -vh * 0.5 + Math.random() * vh * 2,
+            delay:    Math.random() * 700,
+            duration: 750 + Math.random() * 450,
+            startSize: 2.5 + Math.random() * 2.5,
+            endSize:   1,
+        }));
 
-        const start    = performance.now();
-        const duration = 2200;
-        const size     = 1.2;
+        const start = performance.now();
+
+        // easeInOutCubic — motion is visible throughout flight, not bunched
+        // at the end like easeOutCubic was.
+        const ease = k => k < 0.5
+            ? 4 * k * k * k
+            : 1 - Math.pow(-2 * k + 2, 3) / 2;
+
+        // Particle colour: same as the <h1> font (snapshot above).
+        const PARTICLE_COLOR = fontColor;
 
         function frame(now) {
             const t = now - start;
-            ctx.clearRect(0, 0, cw, ch);
-            ctx.fillStyle = cs.color;
+            ctx.clearRect(0, 0, vw, vh);
+            ctx.fillStyle = PARTICLE_COLOR;
 
             let done = true;
             for (const p of particles) {
-                const k = Math.max(0, Math.min(1, (t - p.delay) / duration));
-                const e = 1 - Math.pow(1 - k, 3); // easeOutCubic
+                const k = Math.max(0, Math.min(1, (t - p.delay) / p.duration));
+                const e = ease(k);
+                const sz = p.startSize + (p.endSize - p.startSize) * e;
                 ctx.fillRect(
                     p.sx + (p.tx - p.sx) * e,
                     p.sy + (p.ty - p.sy) * e,
-                    size, size
+                    sz, sz
                 );
                 if (k < 1) done = false;
             }
@@ -497,13 +521,18 @@
             if (!done) {
                 requestAnimationFrame(frame);
             } else {
-                nameEl.style.transition = 'color 250ms ease';
-                nameEl.style.color = prevColor;
+                // Cross-fade: blocky particles dissolve out while the
+                // smooth real <h1> glyphs fade in over the same 600ms.
+                // Without the overlap the swap looks like a jump because
+                // particle squares ≠ anti-aliased text.
+                canvas.style.transition = 'opacity 300ms ease';
+                canvas.style.opacity    = '0';
+                nameEl.style.transition = 'opacity 300ms ease';
+                nameEl.style.opacity    = '1';
                 setTimeout(() => {
                     canvas.remove();
                     nameEl.style.transition = '';
-                    nameEl.style.position   = prevPosition;
-                }, 300);
+                }, 350);
             }
         }
 
