@@ -468,7 +468,7 @@
             sy: Math.random() * vh,
             delay:    Math.random() * 1400,   // wide spread → varied arrivals
             duration: 1500 + Math.random() * 900,
-            size:     1.5 + Math.random() * 2.2, // 1.5–3.7px chunky dots
+            size:     2.5 + Math.random() * 3, // 2.5–5.5 px — unmistakable in flight
         }));
 
         const start = performance.now();
@@ -479,10 +479,16 @@
             ? 4 * k * k * k
             : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
+        // Particle colour: cream (same as the card paper) so the dots are
+        // clearly visible against the dark background photo while flying,
+        // then merge into the card and finally hand off to the real brown
+        // <h1> text. cs.color (brown) would be invisible on the photo.
+        const PARTICLE_COLOR = '#f5ede3';
+
         function frame(now) {
             const t = now - start;
             ctx.clearRect(0, 0, vw, vh);
-            ctx.fillStyle = cs.color;
+            ctx.fillStyle = PARTICLE_COLOR;
 
             let done = true;
             for (const p of particles) {
