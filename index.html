@@ -476,12 +476,15 @@
         // across the viewport, and SHRINK to ~1 px as they arrive — so
         // the assembled shape is a fine high-resolution match to the
         // text glyphs, not a chunky pixel mosaic.
+        // Origins span 2× the viewport on each axis, with the viewport
+        // centred — so plenty of particles start well off-screen and
+        // fly in from further away.
         const particles = targets.map(t => ({
             tx: t.x, ty: t.y,
-            sx: Math.random() * vw,
-            sy: Math.random() * vh,
-            delay:    Math.random() * 700,        // half of 1400
-            duration: 750 + Math.random() * 450,  // half of 1500–2400
+            sx: -vw * 0.5 + Math.random() * vw * 2,
+            sy: -vh * 0.5 + Math.random() * vh * 2,
+            delay:    Math.random() * 700,
+            duration: 750 + Math.random() * 450,
             startSize: 2.5 + Math.random() * 2.5,
             endSize:   1,
         }));
