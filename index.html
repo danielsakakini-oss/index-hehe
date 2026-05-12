@@ -118,6 +118,13 @@
             margin-bottom: 0.5rem;
         }
 
+        /* Hide the static name from first paint so the JS particle
+           animation owns the title — no flash of rendered text before
+           it kicks in. The script restores the colour at the end. */
+        @media (prefers-reduced-motion: no-preference) {
+            .name { color: transparent; }
+        }
+
         .divider {
             width: 60px;
             height: 1px;
@@ -473,10 +480,10 @@
             tx: t.x, ty: t.y,
             sx: Math.random() * vw,
             sy: Math.random() * vh,
-            delay:    Math.random() * 1400,
-            duration: 1500 + Math.random() * 900,
-            startSize: 2.5 + Math.random() * 2.5, // 2.5–5.0 px in flight
-            endSize:   1,                          // crisp 1 px at target
+            delay:    Math.random() * 700,        // half of 1400
+            duration: 750 + Math.random() * 450,  // half of 1500–2400
+            startSize: 2.5 + Math.random() * 2.5,
+            endSize:   1,
         }));
 
         const start = performance.now();
@@ -515,14 +522,14 @@
                 // smooth real <h1> glyphs fade in over the same 600ms.
                 // Without the overlap the swap looks like a jump because
                 // particle squares ≠ anti-aliased text.
-                canvas.style.transition = 'opacity 600ms ease';
+                canvas.style.transition = 'opacity 300ms ease';
                 canvas.style.opacity    = '0';
-                nameEl.style.transition = 'color 600ms ease';
-                nameEl.style.color      = prevColor;
+                nameEl.style.transition = 'color 300ms ease';
+                nameEl.style.color      = prevColor || '#5a4130';
                 setTimeout(() => {
                     canvas.remove();
                     nameEl.style.transition = '';
-                }, 650);
+                }, 350);
             }
         }
 
