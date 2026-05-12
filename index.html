@@ -506,9 +506,18 @@
             if (!done) {
                 requestAnimationFrame(frame);
             } else {
-                nameEl.style.transition = 'color 250ms ease';
-                nameEl.style.color = prevColor;
-                setTimeout(() => { canvas.remove(); nameEl.style.transition = ''; }, 300);
+                // Cross-fade: blocky particles dissolve out while the
+                // smooth real <h1> glyphs fade in over the same 600ms.
+                // Without the overlap the swap looks like a jump because
+                // particle squares ≠ anti-aliased text.
+                canvas.style.transition = 'opacity 600ms ease';
+                canvas.style.opacity    = '0';
+                nameEl.style.transition = 'color 600ms ease';
+                nameEl.style.color      = prevColor;
+                setTimeout(() => {
+                    canvas.remove();
+                    nameEl.style.transition = '';
+                }, 650);
             }
         }
 
