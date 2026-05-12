@@ -479,11 +479,8 @@
             ? 4 * k * k * k
             : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
-        // Particle colour: cream (same as the card paper) so the dots are
-        // clearly visible against the dark background photo while flying,
-        // then merge into the card and finally hand off to the real brown
-        // <h1> text. cs.color (brown) would be invisible on the photo.
-        const PARTICLE_COLOR = '#f5ede3';
+        // Particle colour: same as the <h1> font (brown #5a4130).
+        const PARTICLE_COLOR = cs.color;
 
         function frame(now) {
             const t = now - start;
