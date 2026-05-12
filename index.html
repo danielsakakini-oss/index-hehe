@@ -438,9 +438,10 @@
         const cy = rect.top  + rect.height / 2;
         ctx.fillText(text, cx, cy);
 
-        // Sample non-transparent pixels as particle targets
+        // Sample non-transparent pixels as particle targets — coarser step
+        // so we get hundreds (not thousands) of individually visible dots.
         const img  = ctx.getImageData(0, 0, vw * dpr, vh * dpr).data;
-        const step = Math.max(1, Math.round(dpr));
+        const step = Math.max(3, Math.round(3 * dpr));
         const W    = vw * dpr;
         const targets = [];
         for (let y = 0; y < vh * dpr; y += step) {
@@ -459,17 +460,24 @@
         nameEl.style.color = 'transparent';
         document.body.appendChild(canvas);
 
-        // Each particle starts at a random point in the viewport
+        // Each particle starts at a random point in the viewport, with
+        // its own size and timing so the swarm feels organic.
         const particles = targets.map(t => ({
             tx: t.x, ty: t.y,
             sx: Math.random() * vw,
             sy: Math.random() * vh,
-            delay: Math.random() * 700,
+            delay:    Math.random() * 1400,   // wide spread → varied arrivals
+            duration: 1500 + Math.random() * 900,
+            size:     1.5 + Math.random() * 2.2, // 1.5–3.7px chunky dots
         }));
 
-        const start    = performance.now();
-        const duration = 2200;
-        const size     = 1.2;
+        const start = performance.now();
+
+        // easeInOutCubic — motion is visible throughout flight, not bunched
+        // at the end like easeOutCubic was.
+        const ease = k => k < 0.5
+            ? 4 * k * k * k
+            : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
         function frame(now) {
             const t = now - start;
@@ -478,12 +486,12 @@
 
             let done = true;
             for (const p of particles) {
-                const k = Math.max(0, Math.min(1, (t - p.delay) / duration));
-                const e = 1 - Math.pow(1 - k, 3); // easeOutCubic
+                const k = Math.max(0, Math.min(1, (t - p.delay) / p.duration));
+                const e = ease(k);
                 ctx.fillRect(
                     p.sx + (p.tx - p.sx) * e,
                     p.sy + (p.ty - p.sy) * e,
-                    size, size
+                    p.size, p.size
                 );
                 if (k < 1) done = false;
             }
