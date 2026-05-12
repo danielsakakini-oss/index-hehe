@@ -442,10 +442,11 @@
         const cy = rect.top  + rect.height / 2;
         ctx.fillText(text, cx, cy);
 
-        // Sample non-transparent pixels as particle targets — coarser step
-        // so we get hundreds (not thousands) of individually visible dots.
+        // Sample at fine resolution so the assembled dots actually trace
+        // the glyph shape. We use 1 logical pixel between samples → many
+        // small dots that, when settled, look like the real text.
         const img  = ctx.getImageData(0, 0, vw * dpr, vh * dpr).data;
-        const step = Math.max(3, Math.round(3 * dpr));
+        const step = Math.max(1, Math.round(dpr)); // 1 logical px
         const W    = vw * dpr;
         const targets = [];
         for (let y = 0; y < vh * dpr; y += step) {
@@ -464,15 +465,18 @@
         nameEl.style.color = 'transparent';
         document.body.appendChild(canvas);
 
-        // Each particle starts at a random point in the viewport, with
-        // its own size and timing so the swarm feels organic.
+        // Particles start LARGE so they read as discrete dots streaking
+        // across the viewport, and SHRINK to ~1 px as they arrive — so
+        // the assembled shape is a fine high-resolution match to the
+        // text glyphs, not a chunky pixel mosaic.
         const particles = targets.map(t => ({
             tx: t.x, ty: t.y,
             sx: Math.random() * vw,
             sy: Math.random() * vh,
-            delay:    Math.random() * 1400,   // wide spread → varied arrivals
+            delay:    Math.random() * 1400,
             duration: 1500 + Math.random() * 900,
-            size:     2.5 + Math.random() * 3, // 2.5–5.5 px — unmistakable in flight
+            startSize: 2.5 + Math.random() * 2.5, // 2.5–5.0 px in flight
+            endSize:   1,                          // crisp 1 px at target
         }));
 
         const start = performance.now();
@@ -495,10 +499,11 @@
             for (const p of particles) {
                 const k = Math.max(0, Math.min(1, (t - p.delay) / p.duration));
                 const e = ease(k);
+                const sz = p.startSize + (p.endSize - p.startSize) * e;
                 ctx.fillRect(
                     p.sx + (p.tx - p.sx) * e,
                     p.sy + (p.ty - p.sy) * e,
-                    p.size, p.size
+                    sz, sz
                 );
                 if (k < 1) done = false;
             }
