@@ -120,9 +120,10 @@
 
         /* Hide the static name from first paint so the JS particle
            animation owns the title — no flash of rendered text before
-           it kicks in. The script restores the colour at the end. */
+           it kicks in. Use opacity (not color/visibility) so the
+           computed font colour stays readable by the script. */
         @media (prefers-reduced-motion: no-preference) {
-            .name { color: transparent; }
+            .name { opacity: 0; }
         }
 
         .divider {
@@ -467,9 +468,8 @@
 
         ctx.clearRect(0, 0, vw, vh);
 
-        // Hide real text and add canvas to body
-        const prevColor = nameEl.style.color;
-        nameEl.style.color = 'transparent';
+        // Add canvas to body. The real <h1> is already invisible via
+        // CSS (opacity:0) so we just need to reveal it at the end.
         document.body.appendChild(canvas);
 
         // Particles start LARGE so they read as discrete dots streaking
@@ -524,8 +524,8 @@
                 // particle squares ≠ anti-aliased text.
                 canvas.style.transition = 'opacity 300ms ease';
                 canvas.style.opacity    = '0';
-                nameEl.style.transition = 'color 300ms ease';
-                nameEl.style.color      = prevColor || '#5a4130';
+                nameEl.style.transition = 'opacity 300ms ease';
+                nameEl.style.opacity    = '1';
                 setTimeout(() => {
                     canvas.remove();
                     nameEl.style.transition = '';
