@@ -438,7 +438,7 @@
 
         // Sample non-transparent pixels as particle targets
         const img  = ctx.getImageData(0, 0, cw * dpr, ch * dpr).data;
-        const step = Math.max(2, Math.round(2 * dpr));
+        const step = Math.max(1, Math.round(dpr));
         const W    = cw * dpr;
         const targets = [];
         for (let y = 0; y < ch * dpr; y += step) {
@@ -475,7 +475,7 @@
 
         const start    = performance.now();
         const duration = 2200;
-        const size     = Math.max(1.2, 1.6 * (dpr >= 2 ? 1 : 1));
+        const size     = 1.2;
 
         function frame(now) {
             const t = now - start;
