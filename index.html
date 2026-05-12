@@ -410,6 +410,10 @@
         if (!nameEl) return;
 
         const cs   = getComputedStyle(nameEl);
+        // Snapshot the font colour NOW. getComputedStyle returns a live
+        // object, and we later mutate nameEl.style.color = 'transparent';
+        // re-reading cs.color after that would yield rgba(0,0,0,0).
+        const fontColor = cs.color;
         const text = (nameEl.textContent || '').trim().toUpperCase();
         const rect = nameEl.getBoundingClientRect();
         if (rect.width < 10 || rect.height < 10) return;
@@ -428,7 +432,7 @@
         const ctx = canvas.getContext('2d');
         ctx.scale(dpr, dpr);
         ctx.font         = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-        ctx.fillStyle    = cs.color;
+        ctx.fillStyle    = fontColor;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
         if ('letterSpacing' in ctx) ctx.letterSpacing = cs.letterSpacing;
@@ -479,8 +483,8 @@
             ? 4 * k * k * k
             : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
-        // Particle colour: same as the <h1> font (brown #5a4130).
-        const PARTICLE_COLOR = cs.color;
+        // Particle colour: same as the <h1> font (snapshot above).
+        const PARTICLE_COLOR = fontColor;
 
         function frame(now) {
             const t = now - start;
