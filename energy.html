@@ -332,7 +332,7 @@
                     <div class="summary-value" id="renewables-pct">—<span class="unit">%</span></div>
                 </div>
                 <div class="summary-box">
-                    <div class="summary-label">Carbon-Free</div>
+                    <div class="summary-label">Conventional</div>
                     <div class="summary-value" id="carbonfree-pct">—<span class="unit">%</span></div>
                 </div>
             </div>
@@ -412,11 +412,11 @@
             }
 
             const total = Object.values(values).reduce((a, b) => a + b, 0);
-            let renewableMW = 0, cleanMW = 0;
+            let renewableMW = 0, conventionalMW = 0;
             for (const [code, mw] of Object.entries(values)) {
                 const meta = FUEL_META[code];
-                if (meta?.renewable) renewableMW += mw;
-                if (meta?.clean)     cleanMW     += mw;
+                if (meta?.renewable) renewableMW    += mw;
+                else if (!meta?.clean) conventionalMW += mw;
             }
 
             const pct = v => total > 0 ? Math.round(v / total * 100) : 0;
@@ -426,7 +426,7 @@
             document.getElementById('renewables-pct').innerHTML =
                 pct(renewableMW) + '<span class="unit">%</span>';
             document.getElementById('carbonfree-pct').innerHTML =
-                pct(cleanMW) + '<span class="unit">%</span>';
+                pct(conventionalMW) + '<span class="unit">%</span>';
 
             const maxMW = Math.max(...Object.values(values), 1);
             renderFuelList('renewable-list', RENEWABLE_ORDER, values, maxMW);
