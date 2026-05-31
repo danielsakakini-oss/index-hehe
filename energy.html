@@ -425,6 +425,12 @@
                     <p class="page-subtitle">Live Energy Mix</p>
                     <div class="divider"></div>
 
+                    <!-- Status -->
+                    <div class="status-line" id="status-line">
+                        <span class="dot" id="status-dot"></span>
+                        <span id="status-text">Loading…</span>
+                    </div>
+
                     <!-- Summary totals -->
                     <div class="summary-grid" id="summary-grid">
                         <div class="summary-box">
@@ -487,8 +493,8 @@
         function setStatus(msg, state) {
             const dot  = document.getElementById('status-dot');
             const text = document.getElementById('status-text');
-            text.textContent = msg;
-            dot.className = 'dot' + (state ? ' ' + state : '');
+            if (text) text.textContent = msg;
+            if (dot) dot.className = 'dot' + (state ? ' ' + state : '');
         }
 
         async function fetchData() {
@@ -549,7 +555,7 @@
             } catch(e) {}
 
             document.getElementById('timestamp').textContent = 'Data period: ' + displayTime;
-            setStatus('Live · refreshes every 5 minutes', 'live');
+            setStatus('Live', 'live');
         }
 
         function renderFuelList(containerId, order, values, maxMW) {
