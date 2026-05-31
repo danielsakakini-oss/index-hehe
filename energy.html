@@ -161,7 +161,7 @@
             gap: 0.2rem;
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.25s ease, padding 0.25s ease;
+            transition: max-height 0.4s ease, padding 0.4s ease;
             padding-top: 0;
         }
 
@@ -192,20 +192,6 @@
             border-color: rgba(139,107,72,0.6);
         }
 
-        /* Keep group open if it contains the active button */
-        .region-group:has(.region-btn.active) .region-group-items {
-            max-height: 300px;
-            padding-top: 0.2rem;
-        }
-
-        .region-group:has(.region-btn.active) .region-group-label {
-            color: #5a4130;
-            border-color: rgba(139,107,72,0.5);
-        }
-
-        .region-group:has(.region-btn.active) .region-group-label::after {
-            transform: rotate(-90deg);
-        }
 
         /* Data panel */
         .data-panel { min-width: 0; }
