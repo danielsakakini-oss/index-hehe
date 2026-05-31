@@ -130,6 +130,25 @@
             border-color: rgba(139,107,72,0.6);
         }
 
+        .region-group {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .region-group-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #a08060;
+            width: 100%;
+            margin-top: 0.3rem;
+            margin-bottom: -0.1rem;
+        }
+
         /* Status line */
         .status-line {
             font-size: 0.78rem;
@@ -305,14 +324,43 @@
 
             <!-- Region selector -->
             <div class="region-row" id="region-row">
-                <button class="region-btn active" data-region="US48">US (all)</button>
-                <button class="region-btn" data-region="ERCO">Texas (ERCOT)</button>
-                <button class="region-btn" data-region="PJM">PJM</button>
-                <button class="region-btn" data-region="MISO">MISO</button>
-                <button class="region-btn" data-region="SWPP">SPP</button>
-                <button class="region-btn" data-region="ISNE">New England</button>
-                <button class="region-btn" data-region="NYIS">New York</button>
-                <button class="region-btn" data-region="CISO">California</button>
+                <div class="region-group">
+                    <span class="region-group-label">RTOs / ISOs</span>
+                    <button class="region-btn active" data-region="US48">US (all)</button>
+                    <button class="region-btn" data-region="ERCO">Texas</button>
+                    <button class="region-btn" data-region="PJM">PJM</button>
+                    <button class="region-btn" data-region="MISO">MISO</button>
+                    <button class="region-btn" data-region="SWPP">SPP</button>
+                    <button class="region-btn" data-region="ISNE">New England</button>
+                    <button class="region-btn" data-region="NYIS">New York</button>
+                    <button class="region-btn" data-region="CISO">California</button>
+                </div>
+                <div class="region-group">
+                    <span class="region-group-label">Southeast</span>
+                    <button class="region-btn" data-region="TVA">TVA</button>
+                    <button class="region-btn" data-region="SOCO">Southern Co.</button>
+                    <button class="region-btn" data-region="DUK">Duke Carolinas</button>
+                    <button class="region-btn" data-region="DEF">Duke Florida</button>
+                    <button class="region-btn" data-region="FPL">FPL</button>
+                    <button class="region-btn" data-region="LGEE">LG&amp;E / KU</button>
+                </div>
+                <div class="region-group">
+                    <span class="region-group-label">Northwest</span>
+                    <button class="region-btn" data-region="BPAT">Bonneville</button>
+                    <button class="region-btn" data-region="PACE">PacifiCorp East</button>
+                    <button class="region-btn" data-region="PACW">PacifiCorp West</button>
+                    <button class="region-btn" data-region="PSEI">Puget Sound</button>
+                    <button class="region-btn" data-region="AVA">Avista</button>
+                    <button class="region-btn" data-region="IPCO">Idaho Power</button>
+                </div>
+                <div class="region-group">
+                    <span class="region-group-label">Southwest / Mountain</span>
+                    <button class="region-btn" data-region="AZPS">Arizona PS</button>
+                    <button class="region-btn" data-region="SRP">Salt River</button>
+                    <button class="region-btn" data-region="NEVP">NV Energy</button>
+                    <button class="region-btn" data-region="NWMT">NorthWestern</button>
+                    <button class="region-btn" data-region="TEPC">Tucson Electric</button>
+                </div>
             </div>
 
             <!-- Status -->
