@@ -23,13 +23,6 @@
             overflow-x: hidden;
         }
 
-        @media (min-width: 769px) {
-            body {
-                overflow: hidden;
-                height: 100vh;
-            }
-        }
-
         .bg-overlay {
             position: fixed;
             top: 0;
@@ -61,15 +54,16 @@
         .content-wrapper {
             position: relative;
             z-index: 10;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 4rem 2rem;
+            min-height: 100vh;
+            padding: 2rem;
+            box-sizing: border-box;
         }
 
         .card {
-            margin: 0 auto;
+            margin: auto;
             background: rgba(245, 237, 227, 0.88);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -395,6 +389,5 @@
     </div>
 
     <div class="location-text">Palamos, Spain, 2024</div>
-
 </body>
 </html>
