@@ -401,8 +401,10 @@
 
             const values = {};
             for (const row of relevant) {
-                values[row['fuel-type']] = parseFloat(row.value) || 0;
+                const code = (row['fuel-type'] || row['fueltype'] || '').toUpperCase();
+                if (code) values[code] = parseFloat(row.value) || 0;
             }
+            console.log('EIA fuel codes received:', Object.keys(values));
 
             const total = Object.values(values).reduce((a, b) => a + b, 0);
             let renewableMW = 0, cleanMW = 0;
