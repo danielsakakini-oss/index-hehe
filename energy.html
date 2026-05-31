@@ -354,20 +354,26 @@
 
     <script>
         const FUEL_META = {
-            SUN: { label: 'Solar',       color: 'color-sun', renewable: true,  clean: true  },
-            WND: { label: 'Wind',        color: 'color-wnd', renewable: true,  clean: true  },
-            WAT: { label: 'Hydro',       color: 'color-wat', renewable: true,  clean: true  },
-            GEO: { label: 'Geothermal',  color: 'color-geo', renewable: true,  clean: true  },
-            BIO: { label: 'Biomass',     color: 'color-bio', renewable: true,  clean: false },
-            NUC: { label: 'Nuclear',     color: 'color-nuc', renewable: false, clean: true  },
-            NG:  { label: 'Natural Gas', color: 'color-ng',  renewable: false, clean: false },
-            COL: { label: 'Coal',        color: 'color-col', renewable: false, clean: false },
-            OIL: { label: 'Petroleum',   color: 'color-oil', renewable: false, clean: false },
-            OTH: { label: 'Other',       color: 'color-oth', renewable: false, clean: false },
+            SUN: { label: 'Solar',             color: 'color-sun', renewable: true,  clean: true  },
+            SNB: { label: 'Solar + Battery',   color: 'color-sun', renewable: true,  clean: true  },
+            WND: { label: 'Wind',              color: 'color-wnd', renewable: true,  clean: true  },
+            WNB: { label: 'Wind + Battery',    color: 'color-wnd', renewable: true,  clean: true  },
+            WAT: { label: 'Hydro',             color: 'color-wat', renewable: true,  clean: true  },
+            GEO: { label: 'Geothermal',        color: 'color-geo', renewable: true,  clean: true  },
+            BIO: { label: 'Biomass',           color: 'color-bio', renewable: true,  clean: false },
+            NUC: { label: 'Nuclear',           color: 'color-nuc', renewable: false, clean: true  },
+            BAT: { label: 'Battery Storage',   color: 'color-oth', renewable: false, clean: true  },
+            OES: { label: 'Other Storage',     color: 'color-oth', renewable: false, clean: true  },
+            PS:  { label: 'Pumped Storage',    color: 'color-wat', renewable: false, clean: true  },
+            NG:  { label: 'Natural Gas',       color: 'color-ng',  renewable: false, clean: false },
+            COL: { label: 'Coal',              color: 'color-col', renewable: false, clean: false },
+            OIL: { label: 'Petroleum',         color: 'color-oil', renewable: false, clean: false },
+            OTH: { label: 'Other',             color: 'color-oth', renewable: false, clean: false },
+            UNK: { label: 'Unknown',           color: 'color-oth', renewable: false, clean: false },
         };
 
-        const RENEWABLE_ORDER = ['SUN','WND','WAT','GEO','BIO','NUC'];
-        const FOSSIL_ORDER    = ['NG','COL','OIL','OTH'];
+        const RENEWABLE_ORDER = ['SUN','SNB','WND','WNB','WAT','GEO','BIO','NUC','BAT','OES','PS'];
+        const FOSSIL_ORDER    = ['NG','COL','OIL','OTH','UNK'];
 
         let currentRegion = 'US48';
         let refreshTimer = null;
