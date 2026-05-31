@@ -117,19 +117,57 @@
         }
 
         .region-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            margin-bottom: 1rem;
+            position: relative;
+            margin-bottom: 0.4rem;
         }
 
         .region-group-label {
             font-family: 'Cinzel', serif;
-            font-size: 0.55rem;
+            font-size: 0.72rem;
             letter-spacing: 0.2em;
             text-transform: uppercase;
+            color: #8b6b48;
+            padding: 0.4rem 0.5rem;
+            cursor: default;
+            border: 1px solid rgba(139,107,72,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        .region-group-label::after {
+            content: '›';
+            font-size: 1rem;
             color: #a08060;
-            margin-bottom: 0.2rem;
+            transform: rotate(90deg);
+            transition: transform 0.2s ease;
+            line-height: 1;
+        }
+
+        .region-group:hover .region-group-label {
+            color: #5a4130;
+            border-color: rgba(139,107,72,0.5);
+            background: rgba(139,107,72,0.05);
+        }
+
+        .region-group:hover .region-group-label::after {
+            transform: rotate(-90deg);
+        }
+
+        .region-group-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, padding 0.25s ease;
+            padding-top: 0;
+        }
+
+        .region-group:hover .region-group-items {
+            max-height: 300px;
+            padding-top: 0.2rem;
         }
 
         .region-btn {
@@ -137,12 +175,12 @@
             font-size: 0.62rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            border: 1px solid rgba(139,107,72,0.25);
+            border: 1px solid rgba(139,107,72,0.2);
             background: transparent;
             color: #8b6b48;
-            padding: 0.3rem 0.6rem;
+            padding: 0.28rem 0.6rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             border-radius: 1px;
             text-align: left;
             width: 100%;
@@ -152,6 +190,21 @@
             background: rgba(139,107,72,0.12);
             color: #5a4130;
             border-color: rgba(139,107,72,0.6);
+        }
+
+        /* Keep group open if it contains the active button */
+        .region-group:has(.region-btn.active) .region-group-items {
+            max-height: 300px;
+            padding-top: 0.2rem;
+        }
+
+        .region-group:has(.region-btn.active) .region-group-label {
+            color: #5a4130;
+            border-color: rgba(139,107,72,0.5);
+        }
+
+        .region-group:has(.region-btn.active) .region-group-label::after {
+            transform: rotate(-90deg);
         }
 
         /* Data panel */
@@ -340,40 +393,48 @@
                 <nav class="region-sidebar" id="region-row">
                     <div class="region-group">
                         <span class="region-group-label">RTOs / ISOs</span>
-                        <button class="region-btn active" data-region="US48">US (all)</button>
-                        <button class="region-btn" data-region="ERCO">Texas</button>
-                        <button class="region-btn" data-region="PJM">PJM</button>
-                        <button class="region-btn" data-region="MISO">MISO</button>
-                        <button class="region-btn" data-region="SWPP">SPP</button>
-                        <button class="region-btn" data-region="ISNE">New England</button>
-                        <button class="region-btn" data-region="NYIS">New York</button>
-                        <button class="region-btn" data-region="CISO">California</button>
+                        <div class="region-group-items">
+                            <button class="region-btn active" data-region="US48">US (all)</button>
+                            <button class="region-btn" data-region="ERCO">Texas</button>
+                            <button class="region-btn" data-region="PJM">PJM</button>
+                            <button class="region-btn" data-region="MISO">MISO</button>
+                            <button class="region-btn" data-region="SWPP">SPP</button>
+                            <button class="region-btn" data-region="ISNE">New England</button>
+                            <button class="region-btn" data-region="NYIS">New York</button>
+                            <button class="region-btn" data-region="CISO">California</button>
+                        </div>
                     </div>
                     <div class="region-group">
                         <span class="region-group-label">Southeast</span>
-                        <button class="region-btn" data-region="TVA">TVA</button>
-                        <button class="region-btn" data-region="SOCO">Southern Co.</button>
-                        <button class="region-btn" data-region="DUK">Duke Carolinas</button>
-                        <button class="region-btn" data-region="DEF">Duke Florida</button>
-                        <button class="region-btn" data-region="FPL">FPL</button>
-                        <button class="region-btn" data-region="LGEE">LG&amp;E / KU</button>
+                        <div class="region-group-items">
+                            <button class="region-btn" data-region="TVA">TVA</button>
+                            <button class="region-btn" data-region="SOCO">Southern Co.</button>
+                            <button class="region-btn" data-region="DUK">Duke Carolinas</button>
+                            <button class="region-btn" data-region="DEF">Duke Florida</button>
+                            <button class="region-btn" data-region="FPL">FPL</button>
+                            <button class="region-btn" data-region="LGEE">LG&amp;E / KU</button>
+                        </div>
                     </div>
                     <div class="region-group">
                         <span class="region-group-label">Northwest</span>
-                        <button class="region-btn" data-region="BPAT">Bonneville</button>
-                        <button class="region-btn" data-region="PACE">PacifiCorp East</button>
-                        <button class="region-btn" data-region="PACW">PacifiCorp West</button>
-                        <button class="region-btn" data-region="PSEI">Puget Sound</button>
-                        <button class="region-btn" data-region="AVA">Avista</button>
-                        <button class="region-btn" data-region="IPCO">Idaho Power</button>
+                        <div class="region-group-items">
+                            <button class="region-btn" data-region="BPAT">Bonneville</button>
+                            <button class="region-btn" data-region="PACE">PacifiCorp East</button>
+                            <button class="region-btn" data-region="PACW">PacifiCorp West</button>
+                            <button class="region-btn" data-region="PSEI">Puget Sound</button>
+                            <button class="region-btn" data-region="AVA">Avista</button>
+                            <button class="region-btn" data-region="IPCO">Idaho Power</button>
+                        </div>
                     </div>
                     <div class="region-group">
                         <span class="region-group-label">SW / Mountain</span>
-                        <button class="region-btn" data-region="AZPS">Arizona PS</button>
-                        <button class="region-btn" data-region="SRP">Salt River</button>
-                        <button class="region-btn" data-region="NEVP">NV Energy</button>
-                        <button class="region-btn" data-region="NWMT">NorthWestern</button>
-                        <button class="region-btn" data-region="TEPC">Tucson Electric</button>
+                        <div class="region-group-items">
+                            <button class="region-btn" data-region="AZPS">Arizona PS</button>
+                            <button class="region-btn" data-region="SRP">Salt River</button>
+                            <button class="region-btn" data-region="NEVP">NV Energy</button>
+                            <button class="region-btn" data-region="NWMT">NorthWestern</button>
+                            <button class="region-btn" data-region="TEPC">Tucson Electric</button>
+                        </div>
                     </div>
                 </nav>
 
