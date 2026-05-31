@@ -4,7 +4,6 @@
   // ============================================================
   const API          = '/api';
   const SESSION_KEY  = 'accent-map.admin-token';
-  const INTRO_KEY    = 'accent-map.intro-seen-session';
 
   // Hardcoded display values (no tweaks panel in production)
   const T = {
@@ -759,14 +758,6 @@
       closeAdminModal();
     }
   });
-
-  // ============================================================
-  //  Intro overlay (shown once per session)
-  // ============================================================
-  localStorage.removeItem('accent-map.intro-seen');
-  sessionStorage.removeItem(INTRO_KEY);
-  const introEl = $('#intro');
-  $('#introGo').addEventListener('click', () => introEl.remove());
 
   // ============================================================
   //  Apply display config
