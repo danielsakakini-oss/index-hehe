@@ -227,7 +227,6 @@
         pins = pins.map(p => p.id === updated.id ? updated : p);
         updatePinAPI(updated).catch(err => console.error('pin save failed', err));
         renderPins();
-        renderAdminSidebar();
       }
       pinDrag = null;
       document.body.classList.remove('pin-dragging');
@@ -550,7 +549,6 @@
     updateEmpty();
     updateCounter();
     renderAccentList();
-    renderAdminSidebar();
   }
 
   function updateEmpty() {
@@ -801,40 +799,9 @@
   });
 
   // ============================================================
-  //  Admin sidebar — inventory + drag-to-place + export/import
+  //  Drag from accent list onto map (admin only)
   // ============================================================
-  function renderAdminSidebar() {
-    const list  = $('#asbList');
-    const count = $('#asbCount');
-    if (!list || !isAdmin()) return;
-    count.textContent = pins.length;
-    list.innerHTML = '';
-    const sorted = [...pins]
-      .sort((a, b) => (a.accent || a.country || '').localeCompare(b.accent || b.country || ''));
-    sorted.forEach(pin => {
-      const item = document.createElement('div');
-      item.className = 'asb-item';
-      item.draggable = true;
-      item.dataset.id = pin.id;
-      item.innerHTML =
-        `<span class="asb-drag">⠿</span>` +
-        `<div class="asb-info">` +
-          `<span class="asb-accent">${pin.accent || pin.country || '(unnamed)'}</span>` +
-          (pin.country ? `<span class="asb-country">${pin.country}</span>` : '') +
-        `</div>` +
-        `<span class="asb-dot" title="on map"></span>`;
-
-      item.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/pin-id', pin.id);
-        e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => item.classList.add('dragging'), 0);
-      });
-      item.addEventListener('dragend', () => item.classList.remove('dragging'));
-      list.appendChild(item);
-    });
-  }
-
-  // Sidebar drag-onto-map
+  //
   mapWrap.addEventListener('dragover', e => {
     if (!isAdmin()) return;
     e.preventDefault();
@@ -945,7 +912,13 @@
       const item = document.createElement('div');
       item.className = 'accents-list-item';
       item.dataset.id = pin.id;
-      item.innerHTML = `<span class="ali-accent">${pin.accent || '(unnamed)'}</span>${pin.country ? `<span class="ali-country">${pin.country}</span>` : ''}`;
+      item.innerHTML =
+        `<span class="ali-pin"></span>` +
+        `<div class="ali-text">` +
+          `<span class="ali-accent">${pin.accent || '(unnamed)'}</span>` +
+          (pin.country ? `<span class="ali-country">${pin.country}</span>` : '') +
+        `</div>`;
+
       item.addEventListener('click', () => {
         stopAll();
         if (pin.audio) playClip('pin:' + pin.id, pin.audio);
@@ -953,6 +926,17 @@
         document.querySelectorAll('.accents-list-item').forEach(i => i.classList.remove('playing'));
         item.classList.add('playing');
       });
+
+      if (isAdmin()) {
+        item.draggable = true;
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/pin-id', pin.id);
+          e.dataTransfer.effectAllowed = 'move';
+          setTimeout(() => item.classList.add('dragging'), 0);
+        });
+        item.addEventListener('dragend', () => item.classList.remove('dragging'));
+      }
+
       accentsItems.appendChild(item);
     });
   }
