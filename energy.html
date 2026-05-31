@@ -159,25 +159,15 @@
             display: flex;
             flex-direction: column;
             gap: 0.2rem;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%) scaleY(0);
-            transform-origin: center center;
-            background: rgba(245, 237, 227, 0.97);
-            border: 1px solid rgba(139,107,72,0.25);
-            padding: 0.3rem;
-            z-index: 50;
-            opacity: 0;
-            transition: transform 0.8s ease, opacity 0.5s ease;
-            pointer-events: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.8s ease, padding 0.8s ease;
+            padding-top: 0;
         }
 
         .region-group:hover .region-group-items {
-            transform: translateY(-50%) scaleY(1);
-            opacity: 1;
-            pointer-events: auto;
+            max-height: 300px;
+            padding-top: 0.2rem;
         }
 
         .region-btn {
