@@ -47,6 +47,11 @@ export async function onRequest(context) {
     return handleCalendarFeed(env);
   }
 
+  // Energy grid proxy — public, key stored server-side
+  if (path === 'energy' && request.method === 'GET') {
+    return handleEnergy(request, env);
+  }
+
   // Accent map — GET is public, mutations require admin
   if (path === 'accent-auth' && request.method === 'POST') {
     return handleAccentAuth(request);
@@ -224,6 +229,36 @@ async function handleUsers(request, env, role) {
   }
 
   return jsonResponse({ error: 'Method not allowed' }, 405);
+}
+
+// ============================================================
+//  Energy grid proxy
+// ============================================================
+
+async function handleEnergy(request, env) {
+  const apiKey = env.EIA_API_KEY;
+  if (!apiKey) {
+    return jsonResponse({ error: 'EIA_API_KEY not configured' }, 503);
+  }
+
+  const reqUrl = new URL(request.url);
+  const region = reqUrl.searchParams.get('region') || 'US48';
+
+  const eiaUrl = new URL('https://api.eia.gov/v2/electricity/rto/fuel-type-data/data/');
+  eiaUrl.searchParams.set('api_key', apiKey);
+  eiaUrl.searchParams.set('frequency', 'hourly');
+  eiaUrl.searchParams.append('data[]', 'value');
+  eiaUrl.searchParams.append('facets[respondent][]', region);
+  eiaUrl.searchParams.append('sort[0][column]', 'period');
+  eiaUrl.searchParams.append('sort[0][direction]', 'desc');
+  eiaUrl.searchParams.set('length', '20');
+
+  const resp = await fetch(eiaUrl.toString());
+  const body = await resp.text();
+  return new Response(body, {
+    status: resp.status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
 }
 
 // ============================================================

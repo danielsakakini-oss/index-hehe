@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Grid · Live Energy Mix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Cormorant Garamond', 'Garamond', serif;
+            background: #f5ede3;
+            color: #3b2e1e;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background: linear-gradient(180deg,
+                rgba(62,42,24,0.35) 0%,
+                rgba(62,42,24,0.1) 30%,
+                rgba(62,42,24,0.05) 60%,
+                rgba(62,42,24,0.4) 100%);
+            pointer-events: none;
+        }
+
+        .center-image {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: saturate(0.7) brightness(0.85) sepia(0.2);
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .card {
+            margin: auto;
+            background: rgba(245,237,227,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139,107,72,0.25);
+            border-radius: 2px;
+            padding: 3.5rem 4rem;
+            max-width: 760px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(59,46,30,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .card::before, .card::after {
+            content: '';
+            position: absolute;
+            width: 24px; height: 24px;
+            border-color: rgba(139,107,72,0.3);
+            border-style: solid;
+        }
+        .card::before { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+        .card::after  { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: #5a4130;
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+            font-style: italic;
+            color: #8b6b48;
+            text-align: center;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            width: 60px; height: 1px;
+            background: linear-gradient(90deg, transparent, #8b6b48, transparent);
+            margin: 1.2rem auto;
+        }
+
+        /* Region selector */
+        .region-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.4rem;
+        }
+
+        .region-btn {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: 1px solid rgba(139,107,72,0.35);
+            background: transparent;
+            color: #8b6b48;
+            padding: 0.3rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 1px;
+        }
+
+        .region-btn:hover, .region-btn.active {
+            background: rgba(139,107,72,0.12);
+            color: #5a4130;
+            border-color: rgba(139,107,72,0.6);
+        }
+
+        /* Status line */
+        .status-line {
+            font-size: 0.78rem;
+            font-style: italic;
+            color: #8b6b48;
+            text-align: center;
+            margin-bottom: 1.6rem;
+            letter-spacing: 0.03em;
+            min-height: 1.2em;
+        }
+
+        .status-line .dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #8b6b48;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            animation: pulse 2s infinite;
+        }
+
+        .status-line .dot.live { background: #6a8c4a; }
+        .status-line .dot.error { background: #b05a40; animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Summary totals */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .summary-box {
+            text-align: center;
+            padding: 0.8rem 0.5rem;
+            border: 1px solid rgba(139,107,72,0.18);
+            background: rgba(255,255,255,0.25);
+        }
+
+        .summary-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            margin-bottom: 0.3rem;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #5a4130;
+            letter-spacing: 0.02em;
+        }
+
+        .summary-value .unit {
+            font-size: 0.8rem;
+            color: #8b6b48;
+        }
+
+        /* Fuel rows */
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            margin-bottom: 0.7rem;
+        }
+
+        .fuel-list { margin-bottom: 1.4rem; }
+
+        .fuel-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .fuel-name {
+            font-size: 1rem;
+            color: #5a4130;
+            width: 130px;
+            flex-shrink: 0;
+        }
+
+        .fuel-bar-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(139,107,72,0.12);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .fuel-bar-fill {
+            height: 100%;
+            border-radius: 1px;
+            transition: width 0.6s ease;
+        }
+
+        .fuel-value {
+            font-size: 0.85rem;
+            font-style: italic;
+            color: #8b6b48;
+            width: 80px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Color palette for fuel types */
+        .color-sun  { background: #c8a04a; }
+        .color-wnd  { background: #6a9ab0; }
+        .color-wat  { background: #4a7a9b; }
+        .color-nuc  { background: #7a6a9b; }
+        .color-ng   { background: #b07a4a; }
+        .color-col  { background: #6a5a4a; }
+        .color-oil  { background: #8a6a5a; }
+        .color-geo  { background: #7a9a5a; }
+        .color-bio  { background: #6a8a5a; }
+        .color-oth  { background: #9a8a7a; }
+
+
+        .back-link {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #8b6b48;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: #5a4130; }
+
+        .timestamp {
+            font-size: 0.75rem;
+            font-style: italic;
+            color: #a08060;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 2.5rem 1.5rem; }
+            .summary-grid { grid-template-columns: 1fr 1fr; }
+            .fuel-name { width: 100px; font-size: 0.9rem; }
+            .fuel-value { width: 65px; font-size: 0.8rem; }
+            .page-title { font-size: 1.1rem; letter-spacing: 0.25em; }
+        }
+    </style>
+</head>
+<body>
+    <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
+    <div class="bg-overlay"></div>
+
+    <div class="content-wrapper">
+        <div class="card">
+            <h1 class="page-title">US Grid</h1>
+            <p class="page-subtitle">Live Energy Mix</p>
+
+            <div class="divider"></div>
+
+            <!-- Region selector -->
+            <div class="region-row" id="region-row">
+                <button class="region-btn active" data-region="US48">US (all)</button>
+                <button class="region-btn" data-region="ERCO">Texas (ERCOT)</button>
+                <button class="region-btn" data-region="PJM">PJM</button>
+                <button class="region-btn" data-region="MISO">MISO</button>
+                <button class="region-btn" data-region="SWPP">SPP</button>
+                <button class="region-btn" data-region="ISNE">New England</button>
+                <button class="region-btn" data-region="NYIS">New York</button>
+                <button class="region-btn" data-region="CISO">California</button>
+            </div>
+
+            <!-- Status -->
+            <div class="status-line" id="status-line">
+                <span class="dot" id="status-dot"></span>
+                <span id="status-text">Loading…</span>
+            </div>
+
+            <!-- Summary totals -->
+            <div class="summary-grid" id="summary-grid">
+                <div class="summary-box">
+                    <div class="summary-label">Total Output</div>
+                    <div class="summary-value" id="total-gw">—<span class="unit"> GW</span></div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Renewables</div>
+                    <div class="summary-value" id="renewables-pct">—<span class="unit">%</span></div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Carbon-Free</div>
+                    <div class="summary-value" id="carbonfree-pct">—<span class="unit">%</span></div>
+                </div>
+            </div>
+
+            <!-- Renewable fuels -->
+            <h2 class="section-title">Renewables &amp; Clean</h2>
+            <div class="fuel-list" id="renewable-list"></div>
+
+            <!-- Fossil fuels -->
+            <h2 class="section-title">Conventional</h2>
+            <div class="fuel-list" id="fossil-list"></div>
+
+            <div class="timestamp" id="timestamp"></div>
+
+            <div class="divider"></div>
+            <a href="index.html" class="back-link">← Back</a>
+        </div>
+    </div>
+
+    <script>
+        const FUEL_META = {
+            SUN: { label: 'Solar',       color: 'color-sun', renewable: true,  clean: true  },
+            WND: { label: 'Wind',        color: 'color-wnd', renewable: true,  clean: true  },
+            WAT: { label: 'Hydro',       color: 'color-wat', renewable: true,  clean: true  },
+            GEO: { label: 'Geothermal',  color: 'color-geo', renewable: true,  clean: true  },
+            BIO: { label: 'Biomass',     color: 'color-bio', renewable: true,  clean: false },
+            NUC: { label: 'Nuclear',     color: 'color-nuc', renewable: false, clean: true  },
+            NG:  { label: 'Natural Gas', color: 'color-ng',  renewable: false, clean: false },
+            COL: { label: 'Coal',        color: 'color-col', renewable: false, clean: false },
+            OIL: { label: 'Petroleum',   color: 'color-oil', renewable: false, clean: false },
+            OTH: { label: 'Other',       color: 'color-oth', renewable: false, clean: false },
+        };
+
+        const RENEWABLE_ORDER = ['SUN','WND','WAT','GEO','BIO','NUC'];
+        const FOSSIL_ORDER    = ['NG','COL','OIL','OTH'];
+
+        let currentRegion = 'US48';
+        let refreshTimer = null;
+
+        function setStatus(msg, state) {
+            const dot  = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            text.textContent = msg;
+            dot.className = 'dot' + (state ? ' ' + state : '');
+        }
+
+        async function fetchData() {
+            setStatus('Fetching latest data…', '');
+            try {
+                const resp = await fetch('/api/energy?region=' + currentRegion);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const json = await resp.json();
+                if (json.response?.error) throw new Error(json.response.error);
+                const rows = json.response?.data || [];
+                if (!rows.length) throw new Error('No data returned');
+                processData(rows);
+            } catch (err) {
+                console.error(err);
+                setStatus('Error: ' + err.message, 'error');
+            }
+        }
+
+        function processData(rows) {
+            const latestPeriod = rows[0].period;
+            const relevant = rows.filter(r => r.period === latestPeriod);
+
+            const values = {};
+            for (const row of relevant) {
+                values[row['fuel-type']] = parseFloat(row.value) || 0;
+            }
+
+            const total = Object.values(values).reduce((a, b) => a + b, 0);
+            let renewableMW = 0, cleanMW = 0;
+            for (const [code, mw] of Object.entries(values)) {
+                const meta = FUEL_META[code];
+                if (meta?.renewable) renewableMW += mw;
+                if (meta?.clean)     cleanMW     += mw;
+            }
+
+            const pct = v => total > 0 ? Math.round(v / total * 100) : 0;
+
+            document.getElementById('total-gw').innerHTML =
+                (total / 1000).toFixed(1) + '<span class="unit"> GW</span>';
+            document.getElementById('renewables-pct').innerHTML =
+                pct(renewableMW) + '<span class="unit">%</span>';
+            document.getElementById('carbonfree-pct').innerHTML =
+                pct(cleanMW) + '<span class="unit">%</span>';
+
+            const maxMW = Math.max(...Object.values(values), 1);
+            renderFuelList('renewable-list', RENEWABLE_ORDER, values, maxMW);
+            renderFuelList('fossil-list',    FOSSIL_ORDER,    values, maxMW);
+
+            let displayTime = latestPeriod;
+            try {
+                const dt = new Date(latestPeriod + ':00Z');
+                displayTime = dt.toLocaleString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric',
+                    hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+                    timeZone: 'America/New_York'
+                });
+            } catch(e) {}
+
+            document.getElementById('timestamp').textContent = 'Data period: ' + displayTime;
+            setStatus('Live · refreshes every 5 minutes', 'live');
+        }
+
+        function renderFuelList(containerId, order, values, maxMW) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (const code of order) {
+                const mw = values[code];
+                if (mw === undefined) continue;
+                const meta = FUEL_META[code] || { label: code, color: 'color-oth' };
+                const pctOfMax = maxMW > 0 ? (mw / maxMW * 100) : 0;
+                const gwStr = mw >= 1000
+                    ? (mw / 1000).toFixed(1) + ' GW'
+                    : Math.round(mw) + ' MW';
+
+                const row = document.createElement('div');
+                row.className = 'fuel-row';
+                row.innerHTML = `
+                    <span class="fuel-name">${meta.label}</span>
+                    <div class="fuel-bar-track">
+                        <div class="fuel-bar-fill ${meta.color}" style="width:${pctOfMax.toFixed(1)}%"></div>
+                    </div>
+                    <span class="fuel-value">${gwStr}</span>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        document.getElementById('region-row').addEventListener('click', e => {
+            const btn = e.target.closest('.region-btn');
+            if (!btn) return;
+            document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentRegion = btn.dataset.region;
+            clearTimeout(refreshTimer);
+            fetchData();
+        });
+
+        function scheduleRefresh() {
+            refreshTimer = setTimeout(() => {
+                fetchData().finally(scheduleRefresh);
+            }, 5 * 60 * 1000);
+        }
+
+        fetchData().finally(scheduleRefresh);
+    </script>
+</body>
+</html>
