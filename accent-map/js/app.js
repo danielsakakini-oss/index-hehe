@@ -86,6 +86,10 @@
     return apiFetch(`/accent-pins/${id}`, { method: 'DELETE' });
   }
 
+  async function replacePinsAPI(newPins) {
+    return apiFetch('/accent-pins', { method: 'PUT', body: JSON.stringify(newPins) });
+  }
+
   async function verifyToken(token) {
     try {
       const res = await fetch(`${API}/accent-auth`, {
@@ -177,7 +181,8 @@
   // ============================================================
   //  Pan (mouse) — Pointer Events, mouse only
   // ============================================================
-  let drag = null;
+  let drag    = null;
+  let pinDrag = null; // { pin, el, offsetX, offsetY, moved }
 
   mapWrap.addEventListener('pointerdown', e => {
     if (e.pointerType !== 'mouse') return;
@@ -191,7 +196,18 @@
   });
 
   mapWrap.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse' || !drag) return;
+    if (e.pointerType !== 'mouse') return;
+    if (pinDrag) {
+      const { x, y } = clientToSvg(e.clientX, e.clientY);
+      const nx = x - pinDrag.offsetX, ny = y - pinDrag.offsetY;
+      pinDrag.moved = true;
+      pinDrag.el.querySelectorAll('[cx]').forEach(el => el.setAttribute('cx', String(nx)));
+      pinDrag.el.querySelectorAll('[cy]').forEach(el => el.setAttribute('cy', String(ny)));
+      const lbl = pinDrag.el.querySelector('.pin-label');
+      if (lbl) { lbl.setAttribute('x', String(nx)); lbl.setAttribute('y', String(ny - (T.pinSize * 1.7 + 8) / ZOOM.level)); }
+      return;
+    }
+    if (!drag) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
     ZOOM.tx = drag.tx0 + dx;
@@ -202,6 +218,21 @@
   mapWrap.addEventListener('pointerup', e => {
     if (e.pointerType !== 'mouse') return;
     try { mapWrap.releasePointerCapture(e.pointerId); } catch {}
+    if (pinDrag) {
+      if (pinDrag.moved) {
+        const { x, y } = clientToSvg(e.clientX, e.clientY);
+        const nx = Math.round(x - pinDrag.offsetX);
+        const ny = Math.round(y - pinDrag.offsetY);
+        const updated = { ...pinDrag.pin, x: nx, y: ny };
+        pins = pins.map(p => p.id === updated.id ? updated : p);
+        updatePinAPI(updated).catch(err => console.error('pin save failed', err));
+        renderPins();
+        renderAdminSidebar();
+      }
+      pinDrag = null;
+      document.body.classList.remove('pin-dragging');
+      return;
+    }
     const wasMoved = drag?.moved;
     drag = null;
     document.body.classList.remove('panning');
@@ -500,6 +531,15 @@
       g.addEventListener('mouseleave', () => onPinLeave(pin, g));
 
       if (isAdmin()) {
+        g.addEventListener('pointerdown', e => {
+          if (e.button !== 0 || e.pointerType !== 'mouse') return;
+          if (document.body.classList.contains('add-mode')) return;
+          e.stopPropagation();
+          const svgPos = clientToSvg(e.clientX, e.clientY);
+          pinDrag = { pin: { ...pin }, el: g, offsetX: svgPos.x - pin.x, offsetY: svgPos.y - pin.y, moved: false };
+          mapWrap.setPointerCapture(e.pointerId);
+          document.body.classList.add('pin-dragging');
+        });
         g.addEventListener('dblclick', e => { e.preventDefault(); openEditor(pin); });
         g.addEventListener('click', e => {
           if (e.altKey || e.ctrlKey || e.metaKey) { e.preventDefault(); openEditor(pin); }
@@ -510,6 +550,7 @@
     updateEmpty();
     updateCounter();
     renderAccentList();
+    renderAdminSidebar();
   }
 
   function updateEmpty() {
@@ -758,6 +799,100 @@
       closeAdminModal();
     }
   });
+
+  // ============================================================
+  //  Admin sidebar — inventory + drag-to-place + export/import
+  // ============================================================
+  function renderAdminSidebar() {
+    const list  = $('#asbList');
+    const count = $('#asbCount');
+    if (!list || !isAdmin()) return;
+    count.textContent = pins.length;
+    list.innerHTML = '';
+    const sorted = [...pins]
+      .sort((a, b) => (a.accent || a.country || '').localeCompare(b.accent || b.country || ''));
+    sorted.forEach(pin => {
+      const item = document.createElement('div');
+      item.className = 'asb-item';
+      item.draggable = true;
+      item.dataset.id = pin.id;
+      item.innerHTML =
+        `<span class="asb-drag">⠿</span>` +
+        `<div class="asb-info">` +
+          `<span class="asb-accent">${pin.accent || pin.country || '(unnamed)'}</span>` +
+          (pin.country ? `<span class="asb-country">${pin.country}</span>` : '') +
+        `</div>` +
+        `<span class="asb-dot" title="on map"></span>`;
+
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/pin-id', pin.id);
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => item.classList.add('dragging'), 0);
+      });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+      list.appendChild(item);
+    });
+  }
+
+  // Sidebar drag-onto-map
+  mapWrap.addEventListener('dragover', e => {
+    if (!isAdmin()) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    mapWrap.classList.add('drop-target');
+  });
+  mapWrap.addEventListener('dragleave', e => {
+    if (!mapWrap.contains(e.relatedTarget)) mapWrap.classList.remove('drop-target');
+  });
+  mapWrap.addEventListener('drop', e => {
+    if (!isAdmin()) return;
+    e.preventDefault();
+    mapWrap.classList.remove('drop-target');
+    const id = e.dataTransfer.getData('text/pin-id');
+    if (!id) return;
+    const pin = pins.find(p => p.id === id);
+    if (!pin) return;
+    const { x, y } = clientToSvg(e.clientX, e.clientY);
+    if (x < 0 || y < 0 || x > MAP_W || y > MAP_H) return;
+    const updated = { ...pin, x: Math.round(x), y: Math.round(y) };
+    pins = pins.map(p => p.id === id ? updated : p);
+    renderPins();
+    updatePinAPI(updated).catch(err => console.error('drop save failed', err));
+  });
+
+  // Export: download current pins as accents.json
+  const btnExport = $('#btnExportPins');
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(pins, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = 'accents.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // Import: restore pins from a JSON backup file
+  const fileImport = $('#fileImportPins');
+  if (fileImport) {
+    fileImport.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text     = await file.text();
+        const imported = JSON.parse(text);
+        if (!Array.isArray(imported)) throw new Error('File must be a JSON array of pins.');
+        if (!confirm(`Replace all ${pins.length} current pins with ${imported.length} pins from this file?\n\nThe current state will be backed up automatically.`)) return;
+        await replacePinsAPI(imported);
+        pins = imported;
+        renderPins();
+      } catch (err) {
+        alert('Import failed: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    });
+  }
 
   // ============================================================
   //  Apply display config
