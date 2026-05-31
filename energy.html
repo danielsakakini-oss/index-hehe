@@ -407,7 +407,8 @@
 
             const values = {};
             for (const row of relevant) {
-                values[row['fuel-type']] = parseFloat(row.value) || 0;
+                const code = (row['fueltype'] || row['fuel-type'] || '').toUpperCase();
+                if (code) values[code] = parseFloat(row.value) || 0;
             }
 
             const total = Object.values(values).reduce((a, b) => a + b, 0);
