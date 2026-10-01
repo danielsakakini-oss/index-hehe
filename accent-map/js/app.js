@@ -418,6 +418,14 @@
   //  Audio crossfade engine
   // ============================================================
   const players = new Map();
+  let blockedClip = null;     // clip that autoplay policy refused
+  let hoveredId   = null;     // pin currently under the pointer
+
+  ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+    window.addEventListener(ev, () => {
+      if (blockedClip && blockedClip.id === hoveredId) playClip(blockedClip.id, blockedClip.url);
+      blockedClip = null;
+    }, { capture: true, passive: true }));
 
   function setVolumeOver(p, target, ms) {
     cancelAnimationFrame(p.raf);
@@ -456,6 +464,13 @@
     audio.play().catch(err => {
       console.warn('audio play failed', id, err);
       players.delete(id);
+      // Browsers block audio until the first click/tap/key. Remember the clip
+      // so the first gesture starts it if the pointer is still on the pin.
+      if (err && err.name === 'NotAllowedError') {
+        blockedClip = { id, url };
+        ttState.classList.add('dim');
+        ttState.textContent = 'click anywhere to enable sound';
+      }
     });
     setVolumeOver(p, 1, T.fadeInSec * 1000);
   }
@@ -582,10 +597,12 @@
     // so the new clip isn't cancelled by a concurrent fadeout
     if (isMobile) stopAll();
     else fadeOutAll();
+    hoveredId = 'pin:' + pin.id;
     if (pin.audio) playClip('pin:' + pin.id, pin.audio);
   }
 
   function onPinLeave(pin, el) {
+    if (hoveredId === 'pin:' + pin.id) hoveredId = null;
     el.classList.remove('is-active');
     document.body.classList.remove('has-hover');
     hideTooltip();
@@ -642,7 +659,6 @@
   const fAudio    = $('#fAudio');
   const fRadius   = $('#fRadius');
   const fSave     = $('#fSave');
-  const fCancel   = $('#fCancel');
   const fDelete   = $('#fDelete');
   const fSaveErr  = $('#fSaveErr');
 
@@ -666,48 +682,78 @@
     setTimeout(() => fCountry.focus(), 50);
   }
 
-  function closeModal() {
-    modalVeil.classList.remove('show');
-    editorState = null;
-  }
+  const fStatus = $('#fStatus');
+  let saveTimer = null;
+  let saveChain = Promise.resolve();
 
-  fCancel.addEventListener('click', closeModal);
-  modalVeil.addEventListener('click', e => { if (e.target === modalVeil) closeModal(); });
-
-  fSave.addEventListener('click', async () => {
-    if (!editorState) return;
-    fSave.disabled   = true;
-    fDelete.disabled = true;
-    fSaveErr.style.display = 'none';
-
-    const pin = {
+  function readEditor() {
+    return {
       ...editorState.item,
       country : fCountry.value.trim(),
       accent  : fAccent.value.trim(),
       audio   : fAudio.value.trim(),
       radius  : parseInt(fRadius.value, 10) || T.defaultRadius,
     };
+  }
 
-    try {
-      if (editorState.isNew) {
-        if (!pin.country && !pin.audio) { closeModal(); return; }
-        await createPinAPI(pin);
-        pins = [...pins, pin];
-      } else {
-        await updatePinAPI(pin);
-        pins = pins.map(p => p.id === pin.id ? pin : p);
+  // Saves are chained so a new pin is created exactly once, then updated.
+  function saveEditor() {
+    clearTimeout(saveTimer);
+    if (!editorState) return saveChain;
+    saveChain = saveChain.then(async () => {
+      if (!editorState) return;
+      const pin = readEditor();
+      if (editorState.isNew && !pin.country && !pin.accent && !pin.audio) return;
+      fStatus.textContent = 'saving…';
+      fSaveErr.style.display = 'none';
+      try {
+        if (editorState.isNew) {
+          await createPinAPI(pin);
+          pins = [...pins, pin];
+          editorState.isNew = false;
+          $('#modalTitle').textContent = 'Edit accent pin';
+          fDelete.style.display = 'inline-block';
+        } else {
+          await updatePinAPI(pin);
+          pins = pins.map(p => p.id === pin.id ? pin : p);
+        }
+        editorState.item = pin;
+        renderPins();
+        fStatus.textContent = 'saved ✓';
+      } catch (e) {
+        fStatus.textContent = '';
+        fSaveErr.textContent   = e.message || 'Save failed.';
+        fSaveErr.style.display = 'block';
       }
-      renderPins();
-      closeModal();
-      reloadPins().catch(() => {}); // background sync
-    } catch (e) {
-      fSaveErr.textContent   = e.message || 'Save failed.';
-      fSaveErr.style.display = 'block';
-    } finally {
-      fSave.disabled   = false;
-      fDelete.disabled = false;
-    }
+    });
+    return saveChain;
+  }
+
+  function queueAutosave() {
+    if (!editorState) return;
+    fStatus.textContent = 'unsaved…';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveEditor, 600);
+  }
+
+  [fCountry, fAccent, fAudio, fRadius].forEach(el => el.addEventListener('input', queueAutosave));
+
+  async function closeModal() {
+    if (editorState) await saveEditor();
+    modalVeil.classList.remove('show');
+    editorState = null;
+    fStatus.textContent = '';
+  }
+
+  // Only a full click that both starts and ends on the backdrop (the map
+  // outside the dialog) closes it — dragging a text selection out won't.
+  let veilDown = false;
+  modalVeil.addEventListener('mousedown', e => { veilDown = e.target === modalVeil; });
+  modalVeil.addEventListener('click', e => {
+    if (e.target === modalVeil && veilDown) closeModal();
+    veilDown = false;
   });
+  fSave.addEventListener('click', closeModal);
 
   fDelete.addEventListener('click', async () => {
     if (!editorState) return;
@@ -718,6 +764,7 @@
       await deletePinAPI(editorState.item.id);
       pins = pins.filter(p => p.id !== editorState.item.id);
       renderPins();
+      editorState = null;
       closeModal();
       reloadPins().catch(() => {}); // background sync
     } catch (e) {
@@ -793,7 +840,6 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       toggleAddMode(false);
-      closeModal();
       closeAdminModal();
     }
   });
