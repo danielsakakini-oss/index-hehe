@@ -251,6 +251,43 @@
             animation-play-state: paused !important;
         }
 
+        /* HD mode: metal surfaces rendered per pixel by vault-worker.js replace the CSS-drawn ones */
+        .vault-hd-layer {
+            position: absolute;
+            display: block;
+            pointer-events: none;
+        }
+
+        .vault-hd-door { left: -10%; top: -10%; width: 120%; height: 120%; }
+        .vault-hd-frame { left: -6px; top: -6px; width: calc(100% + 12px); height: calc(100% + 12px); }
+        .vault-hd-wall { left: 25%; top: 25%; width: 50%; height: 50%; }
+        .vault-hd-wheel { left: -12%; top: -12%; width: 124%; height: 124%; }
+
+        .vault-wall-shade {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 50%, transparent calc(var(--d) / 2 + 48px), rgba(0,0,0,0.75) calc(var(--d) / 2 + 52px), rgba(0,0,0,0.25) calc(var(--d) / 2 + 110px), transparent calc(var(--d) / 2 + 200px)),
+                radial-gradient(ellipse 35% 32% at 50% 48%, transparent 40%, rgba(0,0,0,0.6) 100%);
+        }
+
+        #vault.vault-hd .vault-ring,
+        #vault.vault-hd .vault-face-rivets,
+        #vault.vault-hd .vault-engraving,
+        #vault.vault-hd .vault-hinge,
+        #vault.vault-hd .vault-frame-rivets,
+        #vault.vault-hd .vault-frame::after,
+        #vault.vault-hd .vault-wall::before,
+        #vault.vault-hd .vault-wall::after,
+        #vault.vault-hd .vault-dial::before {
+            display: none;
+        }
+
+        #vault.vault-hd .vault-frame { background: none; }
+        #vault.vault-hd .vault-bolt { background: none; box-shadow: none; }
+        #vault.vault-hd .vault-wheel > * { visibility: hidden; }
+        #vault.vault-hd .vault-dial { box-shadow: none; }
+
         .vault-glow,
         .vault-lip,
         .vault-frame,
@@ -1056,16 +1093,160 @@
             faceImg.src = 'vault-face.jpg';
             var assets = [texReady, decoded(faceImg)];
             if (document.fonts && document.fonts.load) assets.push(document.fonts.load('600 12px Cinzel').catch(function () {}));
-            var timeout = new Promise(function (r) { setTimeout(r, 1500); });
+            var hdReady = renderHD();
+            // If anything is slow, start anyway with the CSS-drawn vault rather than a long blank screen
+            var timeout = new Promise(function (r) { setTimeout(function () { r(null); }, 4000); });
 
             var revealTimer, doneTimer;
-            Promise.race([Promise.all(assets), timeout]).then(function () {
+            Promise.race([Promise.all(assets).then(function () { return hdReady; }), timeout]).then(function (mountHD) {
+                if (mountHD) mountHD();
                 requestAnimationFrame(function () {
                     vault.classList.remove('vault-loading');
                     revealTimer = setTimeout(reveal, 6500);
                     doneTimer = setTimeout(finish, 8400);
                 });
             });
+
+            // ---- HD: metal parts lit per pixel at device resolution, rendered in workers ----
+            function renderHD() {
+                return new Promise(function (resolve) {
+                    try {
+                        if (!window.Worker || !window.createImageBitmap) return resolve(null);
+                        var face = vault.querySelector('.vault-face');
+                        var d = face.offsetWidth;
+                        if (!d) return resolve(null);
+                        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+                        var R = d / 2 * dpr, seed = (Math.random() * 1e6) | 0;
+                        var doorSize = Math.round(d * 1.2 * dpr);
+                        var vw = innerWidth, vh = innerHeight, ws = Math.min(dpr, Math.sqrt(2.2e6 / (vw * vh)));
+                        var bw = d * 0.055, bh = d * 0.11, bm = bw * 0.7, rd = d * 0.15;
+                        var fontReady = document.fonts && document.fonts.load ? document.fonts.load('600 20px Cinzel').catch(function () {}) : Promise.resolve();
+                        fontReady.then(function () {
+                            var mask = engravingMask(doorSize, R);
+                            var angles = [];
+                            for (var b = 0; b < 12; b++) angles.push(b * 30 + 15);
+                            var jobs = [
+                                [{ kind: 'door', size: doorSize, u: R, seed: seed, mask: mask.buffer }],
+                                [{ kind: 'wheel', box: Math.round(d * 0.48 * dpr), frames: 15, step: 4 }],
+                                [{ kind: 'frame', size: Math.round(2 * (R + 56 * dpr)), R: R, scale: dpr, seed: seed },
+                                 { kind: 'rim', size: Math.round(2 * (rd + 16) * dpr), rd: rd * dpr, scale: dpr },
+                                 { kind: 'bolts', w: bw * dpr, h: bh * dpr, margin: bm * dpr, angles: angles }],
+                                [{ kind: 'wall', w: Math.round(vw * ws), h: Math.round(vh * ws), scale: ws, seed: seed }]
+                            ];
+                            var results = {}, pending = jobs.length, workers = [], failed = false;
+                            jobs.forEach(function (tasks, j) {
+                                var w = new Worker('vault-worker.js?v=3');
+                                workers.push(w);
+                                w.onmessage = function (e) {
+                                    e.data.results.forEach(function (r) { results[r.kind] = r.images; });
+                                    w.terminate();
+                                    if (--pending === 0) build();
+                                };
+                                w.onerror = function () {
+                                    if (failed) return;
+                                    failed = true;
+                                    workers.forEach(function (x) { x.terminate(); });
+                                    resolve(null);
+                                };
+                                w.postMessage({ tasks: tasks }, j === 0 ? [mask.buffer] : []);
+                            });
+
+                            function build() {
+                                Promise.all(results.wheel.map(function (im) {
+                                    return createImageBitmap(new ImageData(new Uint8ClampedArray(im.data), im.w, im.h));
+                                })).then(function (frames) {
+                                    var doorC = toCanvas(results.door[0], 'vault-hd-door');
+                                    var frameC = toCanvas(results.frame[0], 'vault-hd-frame');
+                                    var rimC = toCanvas(results.rim[0], '');
+                                    var wallC = toCanvas(results.wall[0], 'vault-hd-wall');
+                                    var boltCs = results.bolts.map(function (im) { return toCanvas(im, ''); });
+                                    var wheelC = document.createElement('canvas');
+                                    wheelC.width = wheelC.height = frames[0].width;
+                                    wheelC.className = 'vault-hd-layer vault-hd-wheel';
+                                    resolve(function mountHD() {
+                                        face.insertBefore(doorC, face.firstChild);
+                                        vault.querySelector('.vault-frame').appendChild(frameC);
+                                        var wall = vault.querySelector('.vault-wall'), shadeEl = document.createElement('div');
+                                        shadeEl.className = 'vault-wall-shade';
+                                        wall.appendChild(wallC);
+                                        wall.appendChild(shadeEl);
+                                        vault.querySelector('.vault-wheel-shadow').appendChild(wheelC);
+                                        var dial = vault.querySelector('.vault-dial');
+                                        rimC.style.width = rimC.style.height = 2 * (rd + 16) + 'px';
+                                        rimC.style.left = rimC.style.top = 'calc(50% - ' + (rd + 16) + 'px)';
+                                        dial.parentNode.insertBefore(rimC, dial.nextSibling);
+                                        vault.querySelectorAll('.vault-bolt').forEach(function (el, k) {
+                                            var c = boltCs[k];
+                                            c.style.left = c.style.top = -bm + 'px';
+                                            c.style.width = bw + 2 * bm + 'px';
+                                            c.style.height = bh + 2 * bm + 'px';
+                                            el.appendChild(c);
+                                        });
+                                        vault.classList.add('vault-hd');
+                                        spinWheel(wheelC, frames, 4);
+                                    });
+                                }).catch(function () { resolve(null); });
+                            }
+                        });
+                    } catch (e) { resolve(null); }
+                });
+            }
+
+            function toCanvas(im, cls) {
+                var c = document.createElement('canvas');
+                c.width = im.w; c.height = im.h;
+                c.className = 'vault-hd-layer ' + cls;
+                c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(im.data), im.w, im.h), 0, 0);
+                return c;
+            }
+
+            // The name around the ring, as an alpha mask the renderer cuts into the steel
+            function engravingMask(S, R) {
+                var c = document.createElement('canvas'), g = c.getContext('2d');
+                c.width = c.height = S;
+                var text = 'SAKAKINI • SAKAKINI • SAKAKINI • ', base = R * 0.628, i;
+                g.font = '600 ' + R * 0.124 + 'px Cinzel, serif';
+                g.fillStyle = '#fff';
+                g.textAlign = 'center';
+                var widths = [], total = 0;
+                for (i = 0; i < text.length; i++) { widths.push(g.measureText(text[i]).width); total += widths[i]; }
+                var extra = (2 * Math.PI * base - total) / text.length, pos = 0;
+                for (i = 0; i < text.length; i++) {
+                    g.save();
+                    g.translate(S / 2, S / 2);
+                    g.rotate((pos + widths[i] / 2) / base);
+                    g.fillText(text[i], 0, -base);
+                    g.restore();
+                    pos += widths[i] + extra;
+                }
+                var px = g.getImageData(0, 0, S, S).data, m = new Uint8Array(S * S);
+                for (i = 0; i < m.length; i++) m[i] = px[i * 4 + 3];
+                return m;
+            }
+
+            // The wheel was rendered at 4° steps (it repeats every 60°): follow the CSS
+            // animation's angle, draw the nearest frame and rotate only the remainder,
+            // so its reflections stay fixed to the room while it turns.
+            function spinWheel(canvas, frames, step) {
+                var g = canvas.getContext('2d'), wheel = vault.querySelector('.vault-wheel'), c = canvas.width / 2, n = frames.length;
+                (function draw() {
+                    if (!vault.isConnected) return;
+                    var m = getComputedStyle(wheel).transform, a = 0;
+                    if (m && m !== 'none') {
+                        var v = m.slice(m.indexOf('(') + 1).split(',');
+                        a = Math.atan2(+v[1], +v[0]) * 180 / Math.PI;
+                    }
+                    a = ((a % 60) + 60) % 60;
+                    var idx = Math.round(a / step) % n, rest = a - idx * step;
+                    if (rest > 30) rest -= 60;
+                    g.setTransform(1, 0, 0, 1, 0, 0);
+                    g.clearRect(0, 0, canvas.width, canvas.height);
+                    g.translate(c, c);
+                    g.rotate(rest * Math.PI / 180);
+                    g.drawImage(frames[idx], -c, -c);
+                    requestAnimationFrame(draw);
+                })();
+            }
 
             function reveal() { document.body.classList.remove('vault-active'); }
             function finish() { vault.remove(); }
