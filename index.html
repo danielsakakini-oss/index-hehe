@@ -685,6 +685,87 @@
             body.vault-active .card { opacity: 1; transform: none; }
         }
 
+        /* ---------- Candles in chalices, either side of the content ---------- */
+        .candle {
+            display: none;
+            position: absolute;
+            top: 9rem;
+            width: 150px;
+            aspect-ratio: 120 / 300;
+            pointer-events: none;
+        }
+
+        .candle-left { left: calc(50% - 286px - 190px); }
+        .candle-right { right: calc(50% - 286px - 190px); }
+
+        @media (min-width: 1080px) {
+            .candle { display: block; }
+        }
+
+        .candle svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* Warm light the flame throws onto the page */
+        .candle-light {
+            position: absolute;
+            left: 50.8%;
+            top: 20%;
+            width: 520px;
+            height: 520px;
+            margin: -260px 0 0 -260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 186, 96, 0.30) 0%, rgba(255, 196, 120, 0.14) 30%, rgba(255, 210, 150, 0) 65%);
+        }
+
+        .flame {
+            position: absolute;
+            left: 50.8%;
+            bottom: 74.4%;
+            width: 15%;
+            height: 18%;
+            transform-origin: 50% 100%;
+            transform: translateX(-50%);
+        }
+
+        .flame-halo {
+            position: absolute;
+            left: -110%;
+            right: -110%;
+            top: -40%;
+            bottom: -30%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse 50% 50% at 50% 60%, rgba(255, 214, 140, 0.75), rgba(255, 170, 70, 0.25) 45%, transparent 75%);
+            filter: blur(4px);
+        }
+
+        .flame-body {
+            position: absolute;
+            inset: 0;
+            border-radius: 50% 50% 50% 50% / 68% 68% 32% 32%;
+            background:
+                radial-gradient(ellipse 34% 40% at 50% 74%, rgba(255, 255, 255, 1) 0%, rgba(255, 252, 235, 0.95) 45%, rgba(255, 252, 235, 0) 100%),
+                radial-gradient(ellipse 50% 62% at 50% 66%, #fff6d6 0%, #ffd77e 38%, #ffab3a 62%, rgba(240, 110, 30, 0.55) 82%, rgba(220, 80, 20, 0) 100%);
+            filter: blur(0.8px);
+        }
+
+        /* Blue base where the flame meets the wick */
+        .flame-base {
+            position: absolute;
+            left: 26%;
+            right: 26%;
+            bottom: 0;
+            height: 26%;
+            border-radius: 50% 50% 45% 45%;
+            background: radial-gradient(ellipse at 50% 70%, rgba(70, 110, 255, 0.85), rgba(110, 90, 220, 0.35) 55%, transparent 80%);
+            filter: blur(1px);
+            mix-blend-mode: multiply;
+        }
+
         @media (max-width: 768px) {
             .card {
                 padding: 4.5rem 2rem 3rem;
@@ -771,6 +852,93 @@
 
     <div class="content-wrapper">
         <div class="card">
+            <svg class="candle-defs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+                <defs>
+                    <linearGradient id="cBrass" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0" stop-color="#3f2a10"/>
+                        <stop offset="0.14" stop-color="#8a6230"/>
+                        <stop offset="0.3" stop-color="#e9c983"/>
+                        <stop offset="0.38" stop-color="#fff0c4"/>
+                        <stop offset="0.5" stop-color="#c39448"/>
+                        <stop offset="0.72" stop-color="#6b4719"/>
+                        <stop offset="0.88" stop-color="#b48743"/>
+                        <stop offset="1" stop-color="#3a2610"/>
+                    </linearGradient>
+                    <linearGradient id="cBrassV" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0" stop-color="#fff0c4" stop-opacity="0.55"/>
+                        <stop offset="0.4" stop-color="#000" stop-opacity="0"/>
+                        <stop offset="1" stop-color="#1d1206" stop-opacity="0.45"/>
+                    </linearGradient>
+                    <radialGradient id="cInterior" cx="0.5" cy="0.35" r="0.6">
+                        <stop offset="0" stop-color="#7a5626"/>
+                        <stop offset="1" stop-color="#24170a"/>
+                    </radialGradient>
+                    <linearGradient id="cWax" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0" stop-color="#b7a37d"/>
+                        <stop offset="0.22" stop-color="#e8dbc0"/>
+                        <stop offset="0.42" stop-color="#fffaee"/>
+                        <stop offset="0.7" stop-color="#ece0c7"/>
+                        <stop offset="1" stop-color="#9e8a66"/>
+                    </linearGradient>
+                    <linearGradient id="cWaxGlow" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0" stop-color="#ffb35a" stop-opacity="0.85"/>
+                        <stop offset="0.35" stop-color="#ffc47e" stop-opacity="0.3"/>
+                        <stop offset="1" stop-color="#ffd09a" stop-opacity="0"/>
+                    </linearGradient>
+                    <radialGradient id="cPool" cx="0.5" cy="0.5" r="0.5">
+                        <stop offset="0" stop-color="#ffe7b5"/>
+                        <stop offset="1" stop-color="#f3e2c2"/>
+                    </radialGradient>
+                    <filter id="cBlur3"><feGaussianBlur stdDeviation="3"/></filter>
+                    <filter id="cBlur1"><feGaussianBlur stdDeviation="1"/></filter>
+                    <symbol id="cChalice" viewBox="0 0 120 300">
+                        <!-- shadow on the page -->
+                        <ellipse cx="60" cy="293" rx="46" ry="6" fill="#2b1e10" opacity="0.35" filter="url(#cBlur3)"/>
+                        <!-- foot -->
+                        <ellipse cx="60" cy="289" rx="38" ry="5.5" fill="url(#cBrass)"/>
+                        <path d="M23 288 Q25 277 44 273 Q54 270 56 257 L64 257 Q66 270 76 273 Q95 277 97 288 Q60 296 23 288 Z" fill="url(#cBrass)"/>
+                        <path d="M23 288 Q25 277 44 273 Q54 270 56 257 L64 257 Q66 270 76 273 Q95 277 97 288 Q60 296 23 288 Z" fill="url(#cBrassV)"/>
+                        <!-- stem and knop -->
+                        <rect x="55.5" y="212" width="9" height="48" fill="url(#cBrass)"/>
+                        <ellipse cx="60" cy="236" rx="12" ry="8.5" fill="url(#cBrass)"/>
+                        <ellipse cx="60" cy="236" rx="12" ry="8.5" fill="url(#cBrassV)"/>
+                        <ellipse cx="60" cy="214" rx="10" ry="3.2" fill="url(#cBrass)"/>
+                        <ellipse cx="60" cy="257" rx="7" ry="2.4" fill="url(#cBrass)"/>
+                        <!-- inside of the cup, behind the candle -->
+                        <ellipse cx="60" cy="170" rx="40" ry="7.5" fill="url(#cBrass)"/>
+                        <ellipse cx="60" cy="170" rx="37.5" ry="6" fill="url(#cInterior)"/>
+                        <!-- candle -->
+                        <path d="M44 90 Q44 85 50 84.5 L70 84.5 Q76 85 76 90 L76 178 L44 178 Z" fill="url(#cWax)"/>
+                        <rect class="wax-glow" x="44" y="84" width="32" height="56" fill="url(#cWaxGlow)"/>
+                        <path d="M46.5 89 Q44.8 99 45.6 112 Q46.4 117 47.6 112 Q48.6 101 49.4 90 Z" fill="#f4ead6"/>
+                        <path d="M72 88 Q73.8 97 73.2 106 Q72.6 110 71.6 106 Q71 97 70.4 89 Z" fill="#efe3cb"/>
+                        <ellipse cx="60" cy="87" rx="15.6" ry="3.6" fill="#f1e4ca"/>
+                        <ellipse class="wax-pool" cx="60" cy="87.3" rx="11" ry="2.4" fill="url(#cPool)"/>
+                        <!-- wick -->
+                        <path d="M60 87.5 Q59.2 82 60.6 76.5" stroke="#1a120a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                        <circle cx="60.7" cy="76.4" r="1" fill="#ff7a2a"/>
+                        <!-- front of the cup, hiding the candle base -->
+                        <path d="M20 170 A40 7.5 0 0 0 100 170 Q98 205 69 212 L51 212 Q22 205 20 170 Z" fill="url(#cBrass)"/>
+                        <path d="M20 170 A40 7.5 0 0 0 100 170 Q98 205 69 212 L51 212 Q22 205 20 170 Z" fill="url(#cBrassV)"/>
+                        <path d="M21.5 176 A39 7 0 0 0 98.5 176" stroke="#2f1f0c" stroke-opacity="0.45" stroke-width="1" fill="none"/>
+                        <path d="M25 190 A36 6 0 0 0 95 190" stroke="#fff0c4" stroke-opacity="0.35" stroke-width="0.8" fill="none"/>
+                        <path d="M20 170 A40 7.5 0 0 0 100 170" stroke="#fff3d0" stroke-opacity="0.7" stroke-width="1.2" fill="none"/>
+                        <!-- flickering reflection of the flame on the brass -->
+                        <ellipse class="brass-glint" cx="38" cy="186" rx="3.2" ry="11" fill="#fff4d6" opacity="0.6" filter="url(#cBlur1)"/>
+                        <ellipse class="brass-glint" cx="57" cy="236" rx="2" ry="4.5" fill="#fff4d6" opacity="0.5" filter="url(#cBlur1)"/>
+                    </symbol>
+                </defs>
+            </svg>
+            <div class="candle candle-left" aria-hidden="true">
+                <div class="candle-light"></div>
+                <svg><use href="#cChalice"/></svg>
+                <div class="flame"><div class="flame-halo"></div><div class="flame-body"></div><div class="flame-base"></div></div>
+            </div>
+            <div class="candle candle-right" aria-hidden="true">
+                <div class="candle-light"></div>
+                <svg><use href="#cChalice"/></svg>
+                <div class="flame"><div class="flame-halo"></div><div class="flame-body"></div><div class="flame-base"></div></div>
+            </div>
             <h1 class="name">Daniel Sakakini</h1>
 
             <div class="divider"></div>
@@ -899,6 +1067,41 @@
                 reveal();
                 setTimeout(finish, 50);
             });
+        })();
+    </script>
+    <script>
+        // Candle flicker: layered sine "noise" plus occasional gusts
+        (function () {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            var candles = Array.prototype.map.call(document.querySelectorAll('.candle'), function (el) {
+                var R = Math.random;
+                return {
+                    flame: el.querySelector('.flame'),
+                    halo: el.querySelector('.flame-halo'),
+                    light: el.querySelector('.candle-light'),
+                    svg: el.querySelector('svg'),
+                    p: [R() * 10, R() * 10, R() * 10, R() * 10],
+                    gust: 0
+                };
+            });
+            function frame(ms) {
+                var t = ms / 1000;
+                candles.forEach(function (c) {
+                    if (Math.random() < 0.004) c.gust = 1;
+                    c.gust *= 0.96;
+                    var n = Math.sin(t * 7.3 + c.p[0]) * 0.5 + Math.sin(t * 13.1 + c.p[1]) * 0.3 + Math.sin(t * 23.7 + c.p[2]) * 0.2;
+                    var sway = Math.sin(t * 1.7 + c.p[3]) * 2.5 + Math.sin(t * 4.1 + c.p[0]) * 1.2 + c.gust * Math.sin(t * 30) * 6;
+                    var sy = 1 + n * 0.07 + c.gust * 0.12;
+                    var sx = 1 - n * 0.04;
+                    c.flame.style.transform = 'translateX(-50%) skewX(' + sway.toFixed(2) + 'deg) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+                    var b = 0.85 + n * 0.12 - c.gust * 0.15;
+                    c.halo.style.opacity = b.toFixed(3);
+                    c.light.style.opacity = (0.8 + n * 0.15 - c.gust * 0.2).toFixed(3);
+                    c.light.style.transform = 'translateX(' + (sway * 0.8).toFixed(1) + 'px)';
+                });
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
         })();
     </script>
 </body>
