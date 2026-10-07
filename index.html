@@ -767,16 +767,14 @@
             will-change: opacity, transform;
         }
 
+        /* Face dial turns one way (clockwise), the handwheel the other */
         @keyframes vault-dial-spin {
-            0%   { transform: rotate(0deg); }
-            24%  { transform: rotate(400deg); }
-            46%  { transform: rotate(150deg); }
-            72%  { transform: rotate(560deg); }
-            100% { transform: rotate(720deg); }
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(720deg); }
         }
 
         @keyframes vault-wheel-spin {
-            to { transform: rotate(630deg); }
+            to { transform: rotate(-630deg); }
         }
 
         @keyframes vault-bolt-retract {
