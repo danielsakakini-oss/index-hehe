@@ -1309,7 +1309,7 @@
                     master.gain.value = 0.85;
                     // gentle limiter so the big clang can't clip
                     var comp = ctx.createDynamicsCompressor();
-                    comp.threshold.value = -10; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.25;
+                    comp.threshold.value = -6; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.25;
                     master.connect(comp);
                     comp.connect(ctx.destination);
                     // big stone banking-hall reverb: a few early reflections, then a long dark tail
@@ -1414,14 +1414,19 @@
                 // the classic part: bolts hitting their stops — a deep boom and a long ringing clang
                 function clang(t) {
                     var o = ctx.createOscillator(), og = ctx.createGain();
-                    o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(34, t + 0.6);
-                    o.connect(og); out(og, 1, true);
-                    env(og, t, 0.004, 1, 0.9);
-                    o.start(t); o.stop(t + 1);
-                    burst(t, 'lowpass', 1800, 0.7, 0.9, 0.12);
-                    burst(t, 'bandpass', 3800, 2, 0.35, 0.05);
-                    ring(t, [[87, 2.6, 0.55], [213, 2.2, 0.45], [401, 1.7, 0.32], [664, 1.3, 0.22], [979, 1.0, 0.14], [1471, 0.7, 0.09], [2203, 0.45, 0.05]], 0.55);
-                    ring(t + 0.07, [[95, 1.8, 0.3], [347, 1.2, 0.18], [811, 0.8, 0.1]], 0.4);   // second set of bolts a beat later
+                    o.frequency.setValueAtTime(55, t); o.frequency.exponentialRampToValueAtTime(26, t + 0.9);
+                    o.connect(og); out(og, 1.5, true);
+                    env(og, t, 0.004, 1, 1.4);
+                    o.start(t); o.stop(t + 1.5);
+                    var sub = ctx.createOscillator(), sg = ctx.createGain();   // chest-thump sub
+                    sub.frequency.value = 31;
+                    sub.connect(sg); out(sg, 1.1, false);
+                    env(sg, t, 0.006, 1, 1.8);
+                    sub.start(t); sub.stop(t + 1.9);
+                    burst(t, 'lowpass', 1400, 0.7, 1.1, 0.16);
+                    burst(t, 'bandpass', 3200, 2, 0.4, 0.06);
+                    ring(t, [[61, 3.6, 0.6], [149, 3.1, 0.5], [281, 2.5, 0.36], [465, 1.9, 0.24], [686, 1.4, 0.15], [1030, 1.0, 0.09], [1542, 0.65, 0.05]], 0.9);
+                    ring(t + 0.07, [[66, 2.6, 0.35], [243, 1.7, 0.2], [568, 1.1, 0.1]], 0.65);   // second set of bolts a beat later
                 }
                 // pressure seal letting go
                 function hiss(t) {
