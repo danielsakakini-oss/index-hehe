@@ -847,6 +847,9 @@
             var vault = document.getElementById('vault');
             var seen = false;
             try { seen = sessionStorage.getItem('vaultSeen') === '1'; } catch (e) {}
+            // Replay on refresh, but not when arriving from another page on the site
+            var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (nav && nav.type === 'reload') seen = false;
             if (seen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 vault.remove();
                 document.body.classList.remove('vault-active');
