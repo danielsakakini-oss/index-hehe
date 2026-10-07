@@ -1768,8 +1768,8 @@
         <span>Wind</span>
     </button>
     <script>
-        // Low, endless wind behind the homepage (synthesised with Web Audio). Fades in once the
-        // vault intro has revealed the page, and fades out when any link is clicked.
+        // Low, endless wind behind the homepage (synthesised with Web Audio). Starts as soon as
+        // the site opens and fades out when any link is clicked.
         (function () {
             var AC = window.AudioContext || window.webkitAudioContext;
             if (!AC) return;
@@ -1832,7 +1832,7 @@
                 try { build(); } catch (e) { return; }
                 btn.hidden = false;
                 update();
-                if (!muted) fadeTo(LEVEL, 3);
+                if (!muted) fadeTo(LEVEL, 1.5);
                 ctx.resume().catch(function () {});
             }
 
@@ -1848,12 +1848,8 @@
                 }, { capture: true, passive: true });
             });
 
-            // Start when the page is revealed (immediately if the vault intro isn't showing)
-            if (document.body.classList.contains('vault-active')) {
-                new MutationObserver(function (list, obs) {
-                    if (!document.body.classList.contains('vault-active')) { obs.disconnect(); start(); }
-                }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-            } else start();
+            // Start as soon as the site opens (underneath the vault intro too)
+            start();
 
             btn.addEventListener('click', function () {
                 muted = !muted;
