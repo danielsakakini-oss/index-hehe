@@ -23,33 +23,7 @@
             overflow-x: hidden;
         }
 
-        .bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            filter: saturate(0.7) brightness(0.85) sepia(0.2);
-        }
 
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background:
-                linear-gradient(180deg,
-                    rgba(62, 42, 24, 0.35) 0%,
-                    rgba(62, 42, 24, 0.1) 30%,
-                    rgba(62, 42, 24, 0.05) 60%,
-                    rgba(62, 42, 24, 0.4) 100%
-                );
-            pointer-events: none;
-        }
 
         /* ---- Login Screen ---- */
         .login-screen {
@@ -69,14 +43,14 @@
             font-weight: 400;
             letter-spacing: 0.35em;
             text-transform: uppercase;
-            color: rgba(245, 237, 227, 0.9);
+            color: #5a4130;
             margin-bottom: 0.5rem;
         }
 
         .login-screen p.subtitle {
             font-size: 1.1rem;
             font-style: italic;
-            color: rgba(245, 237, 227, 0.6);
+            color: #8b6b48;
             margin-bottom: 2rem;
             letter-spacing: 0.05em;
         }
@@ -186,13 +160,13 @@
             font-weight: 400;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: rgba(245, 237, 227, 0.55);
+            color: rgba(90, 65, 48, 0.6);
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
         .login-home-link a:hover {
-            color: rgba(245, 237, 227, 0.9);
+            color: #5a4130;
         }
 
         /* ---- App Layout ---- */
@@ -671,8 +645,7 @@
             font-weight: 500;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: rgba(245, 237, 227, 0.95);
-            text-shadow: 0 2px 8px rgba(59, 46, 30, 0.4);
+            color: #5a4130;
             margin-bottom: 0.8rem;
         }
 
@@ -707,20 +680,18 @@
             font-size: 1.3rem;
             font-weight: 500;
             letter-spacing: 0.15em;
-            color: rgba(245, 237, 227, 0.95);
+            color: #5a4130;
             text-transform: uppercase;
             line-height: 1.4;
-            text-shadow: 0 2px 8px rgba(59, 46, 30, 0.4);
         }
 
         .side-panel-left .motto-subtitle {
             font-family: 'Cormorant Garamond', serif;
             font-size: 0.95rem;
             font-style: italic;
-            color: rgba(245, 237, 227, 0.7);
+            color: #8b6b48;
             margin-top: 0.6rem;
             line-height: 1.5;
-            text-shadow: 0 1px 4px rgba(59, 46, 30, 0.3);
         }
 
         .side-panel-right {
@@ -745,10 +716,9 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 0.9rem;
             font-style: italic;
-            color: rgba(245, 237, 227, 0.75);
+            color: #8b6b48;
             margin-top: 1rem;
             line-height: 1.6;
-            text-shadow: 0 1px 4px rgba(59, 46, 30, 0.3);
         }
 
         .calendar-center {
@@ -841,8 +811,6 @@
     </style>
 </head>
 <body>
-    <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="bg-image">
-    <div class="bg-overlay"></div>
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div class="login-screen" id="loginScreen">

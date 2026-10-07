@@ -19,27 +19,7 @@
             overflow-x: hidden;
         }
 
-        .bg-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            background: linear-gradient(180deg,
-                rgba(62,42,24,0.35) 0%,
-                rgba(62,42,24,0.1) 30%,
-                rgba(62,42,24,0.05) 60%,
-                rgba(62,42,24,0.4) 100%);
-            pointer-events: none;
-        }
 
-        .center-image {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            filter: saturate(0.7) brightness(0.85) sepia(0.2);
-        }
 
         .content-wrapper {
             position: relative;
@@ -364,8 +344,6 @@
     </style>
 </head>
 <body>
-    <img src="https://raw.githubusercontent.com/danielsakakini-oss/index-hehe/main/IMG_1604.jpeg" alt="" class="center-image">
-    <div class="bg-overlay"></div>
 
     <div class="content-wrapper">
         <div class="card">
