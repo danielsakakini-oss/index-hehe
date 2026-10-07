@@ -549,44 +549,35 @@
             box-shadow: inset 0 -3px 6px rgba(0,0,0,0.5);
         }
 
+        /* Center of the door: Daniel's face, framed like a porthole */
         .vault-dial {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 21%;
-            height: 21%;
-            margin: -10.5% 0 0 -10.5%;
+            width: 30%;
+            height: 30%;
+            margin: -15% 0 0 -15%;
             border-radius: 50%;
-            background: radial-gradient(circle at 50% 50%, #3a3b38 0 6%, transparent 7%);
-            box-shadow: 0 0 0 4px #2a2b29, 0 0 0 6px #a9aaa5, 0 6px 12px rgba(0,0,0,0.6);
+            background: url("vault-face.jpg") 50% 42% / cover no-repeat;
+            box-shadow:
+                0 0 0 3px #2a2b29,
+                0 0 0 7px #c19d68,
+                0 0 0 9px #5b4a37,
+                0 0 0 11px #a9aaa5,
+                0 8px 16px rgba(0,0,0,0.6);
             animation: vault-dial-spin 1.5s ease-in-out 0.4s forwards;
         }
 
+        /* Glass sheen and inner shadow over the face */
         .vault-dial::before {
             content: '';
             position: absolute;
             inset: 0;
-            z-index: -1;
             border-radius: 50%;
             background:
-                radial-gradient(circle, transparent 62%, rgba(255,255,255,0.18) 63%, transparent 66%),
-                repeating-conic-gradient(rgba(30, 22, 12, 0.85) 0 1.2deg, transparent 1.2deg 9deg),
-                repeating-conic-gradient(rgba(30, 22, 12, 0.85) 0 2deg, transparent 2deg 45deg),
-                conic-gradient(from 20deg, rgba(255,255,255,0.45), rgba(0,0,0,0.2) 70deg, rgba(255,255,255,0.35) 170deg, rgba(0,0,0,0.25) 260deg, rgba(255,255,255,0.45)),
-                radial-gradient(circle at 40% 35%, #f4e2b8, #c19d68 55%, #7b5d38);
-        }
-
-        .vault-dial::after {
-            content: '';
-            position: absolute;
-            top: 6%;
-            left: 50%;
-            width: 4px;
-            height: 24%;
-            margin-left: -2px;
-            background: #b33a1e;
-            border-radius: 2px;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+                radial-gradient(ellipse 60% 40% at 35% 22%, rgba(255,255,255,0.45), transparent 70%),
+                linear-gradient(160deg, transparent 55%, rgba(255,255,255,0.12) 62%, transparent 70%);
+            box-shadow: inset 0 0 14px 3px rgba(0,0,0,0.55);
         }
 
         @keyframes vault-dolly {
@@ -598,7 +589,7 @@
             0%   { transform: rotate(0deg); }
             35%  { transform: rotate(320deg); }
             65%  { transform: rotate(140deg); }
-            100% { transform: rotate(410deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes vault-wheel-spin {
