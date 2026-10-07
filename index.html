@@ -411,13 +411,22 @@
         }
 
         /* Stacked discs give the door real thickness as it swings */
+        /* Door thickness: stacked brushed-steel discs stepped down in three tiers like a
+           bank-vault plug door. Light comes from above, so the edge is bright on top and
+           falls off underneath; each slice varies slightly, like machined lathe lines. */
         .vault-layer {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #6d6e6a, #3a3b38 70%, #232422);
-            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);
-            transform: translateZ(calc(var(--z) * -1));
+            background:
+                linear-gradient(rgba(0, 0, 0, var(--k)), rgba(0, 0, 0, var(--k))),
+                conic-gradient(rgba(255,255,255,0.38), rgba(255,255,255,0.08) 70deg, rgba(0,0,0,0.45) 160deg, rgba(0,0,0,0.62) 200deg, rgba(0,0,0,0.32) 260deg, rgba(255,255,255,0.26) 320deg, rgba(255,255,255,0.38)),
+                var(--tex, radial-gradient(circle at 40% 40%, #8d8e8a, #5a5b58 70%, #3a3b38)) center / cover;
+            transform: translateZ(calc(var(--z) * -1)) scale(var(--s));
+        }
+
+        .vault-layer.step {
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), inset 0 0 0 3px rgba(0, 0, 0, 0.4);
         }
 
         .vault-face {
@@ -1070,7 +1079,7 @@
                     if (!blob) return resolve();
                     texImg.src = URL.createObjectURL(blob);
                     decoded(texImg).then(function () {
-                        vault.querySelectorAll('.vault-face, .vault-ring.r2, .vault-frame').forEach(function (el) {
+                        vault.querySelectorAll('.vault-door, .vault-ring.r2, .vault-frame').forEach(function (el) {
                             el.style.setProperty('--tex', 'url(' + texImg.src + ')');
                         });
                         resolve();
@@ -1080,7 +1089,14 @@
             });
 
             var door = vault.querySelector('.vault-door');
-            for (i = 1; i <= 14; i++) add(door, 'vault-layer', { '--z': (i * 2) + 'px' });
+            for (i = 1; i <= 24; i++) {
+                var tier = i <= 9 ? 1 : i <= 17 ? 0.965 : 0.93;
+                add(door, i === 10 || i === 18 ? 'vault-layer step' : 'vault-layer', {
+                    '--z': (i * 2) + 'px',
+                    '--s': tier,
+                    '--k': (Math.random() * 0.12 + (i % 4 === 0 ? 0.08 : 0)).toFixed(3)
+                });
+            }
             door.appendChild(vault.querySelector('.vault-face'));
 
             // Hold the animation (on a dark backdrop) until the steel texture, the face
