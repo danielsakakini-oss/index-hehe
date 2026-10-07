@@ -229,6 +229,20 @@
             animation: vault-dolly 2.2s cubic-bezier(.2, .6, .2, 1) both;
         }
 
+        /* Dark backdrop with everything paused until assets are ready */
+        #vault.vault-loading {
+            background: #1c1a17;
+        }
+
+        #vault.vault-loading > * {
+            visibility: hidden;
+        }
+
+        #vault.vault-loading,
+        #vault.vault-loading * {
+            animation-play-state: paused !important;
+        }
+
         .vault-glow,
         .vault-lip,
         .vault-frame,
@@ -817,7 +831,7 @@
     </style>
 </head>
 <body class="vault-active">
-    <div id="vault" aria-hidden="true">
+    <div id="vault" class="vault-loading" aria-hidden="true">
         <div class="vault-glow"></div>
         <div class="vault-scene">
             <div class="vault-wall"></div>
@@ -849,6 +863,120 @@
         </div>
         <div class="vault-rays"></div>
     </div>
+    <script>
+        (function () {
+            var vault = document.getElementById('vault');
+            var seen = false;
+            try { seen = sessionStorage.getItem('vaultSeen') === '1'; } catch (e) {}
+            // Replay on refresh, but not when arriving from another page on the site
+            var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (nav && nav.type === 'reload') seen = false;
+            if (seen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                vault.remove();
+                document.body.classList.remove('vault-active');
+                return;
+            }
+            try { sessionStorage.setItem('vaultSeen', '1'); } catch (e) {}
+
+            function add(parent, className, props) {
+                var el = document.createElement('div');
+                el.className = className;
+                for (var k in props) el.style.setProperty(k, props[k]);
+                parent.appendChild(el);
+            }
+
+            var i, n;
+            var bolts = vault.querySelector('.vault-bolts');
+            for (i = 0; i < 12; i++) add(bolts, 'vault-bolt', { '--a': (i * 30 + 15) + 'deg', '--i': i });
+
+            var faceRivets = vault.querySelector('.vault-face-rivets');
+            for (i = 0; i < 24; i++) add(faceRivets, 'vault-rivet', { '--a': (i * 15) + 'deg', '--r': 'calc(var(--d) * -0.43)', '--s': 'calc(var(--d) * 0.022)' });
+
+            var frameRivets = vault.querySelector('.vault-frame-rivets');
+            for (i = 0; i < 20; i++) add(frameRivets, 'vault-rivet', { '--a': (i * 18 + 9) + 'deg', '--r': 'calc(var(--d) / -2 - 36px)', '--s': '11px' });
+
+            // Procedural brushed steel: concentric brush strokes, scratches and grime
+            var texImg = new Image();
+            try {
+                var dpr = window.devicePixelRatio || 1;
+                var dPx = Math.min(Math.min(innerWidth, innerHeight) * 0.7, 460);
+                var size = Math.max(512, Math.min(1024, Math.ceil(dPx * dpr / 128) * 128));
+                var c = document.createElement('canvas');
+                c.width = c.height = size;
+                var g = c.getContext('2d'), h = size / 2, R = Math.random;
+                var base = g.createRadialGradient(h * 0.75, h * 0.6, 0, h, h, h * 1.05);
+                base.addColorStop(0, '#b4b5b0');
+                base.addColorStop(0.55, '#7e7f7a');
+                base.addColorStop(1, '#454642');
+                g.fillStyle = base;
+                g.fillRect(0, 0, size, size);
+                for (i = 0, n = Math.round(7000 * size * size / 1048576); i < n; i++) {
+                    var r = Math.sqrt(R()) * h * 1.02, a0 = R() * Math.PI * 2;
+                    g.strokeStyle = R() < 0.5 ? 'rgba(255,255,255,' + R() * 0.07 + ')' : 'rgba(0,0,0,' + R() * 0.08 + ')';
+                    g.lineWidth = 0.4 + R() * 1.2;
+                    g.beginPath();
+                    g.arc(h, h, r, a0, a0 + 0.05 + R() * 0.9);
+                    g.stroke();
+                }
+                for (i = 0; i < 160; i++) {
+                    var x = R() * size, y = R() * size, ang = R() * Math.PI, len = 4 + R() * 50;
+                    var dx = Math.cos(ang) * len, dy = Math.sin(ang) * len;
+                    g.lineWidth = 0.6;
+                    g.strokeStyle = 'rgba(255,255,255,' + (0.05 + R() * 0.1) + ')';
+                    g.beginPath(); g.moveTo(x, y); g.lineTo(x + dx, y + dy); g.stroke();
+                    g.strokeStyle = 'rgba(0,0,0,' + (0.05 + R() * 0.1) + ')';
+                    g.beginPath(); g.moveTo(x + 0.8, y + 0.8); g.lineTo(x + dx + 0.8, y + dy + 0.8); g.stroke();
+                }
+                for (i = 0; i < 18; i++) {
+                    var gx = R() * size, gy = R() * size, gr = 30 + R() * 180;
+                    var blot = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
+                    blot.addColorStop(0, 'rgba(50,40,28,' + (0.04 + R() * 0.07) + ')');
+                    blot.addColorStop(1, 'rgba(50,40,28,0)');
+                    g.fillStyle = blot;
+                    g.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
+                }
+                texImg.src = c.toDataURL('image/jpeg', 0.88);
+                vault.style.setProperty('--tex', 'url(' + texImg.src + ')');
+            } catch (e) {}
+
+            var door = vault.querySelector('.vault-door');
+            for (i = 1; i <= 14; i++) add(door, 'vault-layer', { '--z': (i * 2) + 'px' });
+            door.appendChild(vault.querySelector('.vault-face'));
+
+            // Hold the animation (on a dark backdrop) until the steel texture, the face
+            // photo and the engraving font are decoded, so nothing pops in mid-animation.
+            function decoded(img) {
+                if (!img.src) return Promise.resolve();
+                return img.decode ? img.decode().catch(function () {}) : new Promise(function (r) { img.onload = img.onerror = r; });
+            }
+            var faceImg = new Image();
+            faceImg.src = 'vault-face.jpg';
+            var assets = [decoded(texImg), decoded(faceImg)];
+            if (document.fonts && document.fonts.load) assets.push(document.fonts.load('600 12px Cinzel').catch(function () {}));
+            var timeout = new Promise(function (r) { setTimeout(r, 1500); });
+
+            var revealTimer, doneTimer;
+            Promise.race([Promise.all(assets), timeout]).then(function () {
+                requestAnimationFrame(function () {
+                    vault.classList.remove('vault-loading');
+                    revealTimer = setTimeout(reveal, 6500);
+                    doneTimer = setTimeout(finish, 8400);
+                });
+            });
+
+            function reveal() { document.body.classList.remove('vault-active'); }
+            function finish() { vault.remove(); }
+
+            vault.addEventListener('click', function () {
+                clearTimeout(revealTimer);
+                clearTimeout(doneTimer);
+                vault.classList.remove('vault-loading');
+                vault.classList.add('vault-skip');
+                reveal();
+                setTimeout(finish, 50);
+            });
+        })();
+    </script>
 
     <div class="content-wrapper">
         <div class="card">
@@ -979,96 +1107,6 @@
     </div>
 
 
-    <script>
-        (function () {
-            var vault = document.getElementById('vault');
-            var seen = false;
-            try { seen = sessionStorage.getItem('vaultSeen') === '1'; } catch (e) {}
-            // Replay on refresh, but not when arriving from another page on the site
-            var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-            if (nav && nav.type === 'reload') seen = false;
-            if (seen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                vault.remove();
-                document.body.classList.remove('vault-active');
-                return;
-            }
-            try { sessionStorage.setItem('vaultSeen', '1'); } catch (e) {}
-
-            function add(parent, className, props) {
-                var el = document.createElement('div');
-                el.className = className;
-                for (var k in props) el.style.setProperty(k, props[k]);
-                parent.appendChild(el);
-            }
-
-            var i;
-            var bolts = vault.querySelector('.vault-bolts');
-            for (i = 0; i < 12; i++) add(bolts, 'vault-bolt', { '--a': (i * 30 + 15) + 'deg', '--i': i });
-
-            var faceRivets = vault.querySelector('.vault-face-rivets');
-            for (i = 0; i < 24; i++) add(faceRivets, 'vault-rivet', { '--a': (i * 15) + 'deg', '--r': 'calc(var(--d) * -0.43)', '--s': 'calc(var(--d) * 0.022)' });
-
-            var frameRivets = vault.querySelector('.vault-frame-rivets');
-            for (i = 0; i < 20; i++) add(frameRivets, 'vault-rivet', { '--a': (i * 18 + 9) + 'deg', '--r': 'calc(var(--d) / -2 - 36px)', '--s': '11px' });
-
-            // Procedural brushed steel: concentric brush strokes, scratches and grime
-            try {
-                var size = 1024, c = document.createElement('canvas');
-                c.width = c.height = size;
-                var g = c.getContext('2d'), h = size / 2, R = Math.random;
-                var base = g.createRadialGradient(h * 0.75, h * 0.6, 0, h, h, h * 1.05);
-                base.addColorStop(0, '#b4b5b0');
-                base.addColorStop(0.55, '#7e7f7a');
-                base.addColorStop(1, '#454642');
-                g.fillStyle = base;
-                g.fillRect(0, 0, size, size);
-                for (i = 0; i < 7000; i++) {
-                    var r = Math.sqrt(R()) * h * 1.02, a0 = R() * Math.PI * 2;
-                    g.strokeStyle = R() < 0.5 ? 'rgba(255,255,255,' + R() * 0.07 + ')' : 'rgba(0,0,0,' + R() * 0.08 + ')';
-                    g.lineWidth = 0.4 + R() * 1.2;
-                    g.beginPath();
-                    g.arc(h, h, r, a0, a0 + 0.05 + R() * 0.9);
-                    g.stroke();
-                }
-                for (i = 0; i < 160; i++) {
-                    var x = R() * size, y = R() * size, ang = R() * Math.PI, len = 4 + R() * 50;
-                    var dx = Math.cos(ang) * len, dy = Math.sin(ang) * len;
-                    g.lineWidth = 0.6;
-                    g.strokeStyle = 'rgba(255,255,255,' + (0.05 + R() * 0.1) + ')';
-                    g.beginPath(); g.moveTo(x, y); g.lineTo(x + dx, y + dy); g.stroke();
-                    g.strokeStyle = 'rgba(0,0,0,' + (0.05 + R() * 0.1) + ')';
-                    g.beginPath(); g.moveTo(x + 0.8, y + 0.8); g.lineTo(x + dx + 0.8, y + dy + 0.8); g.stroke();
-                }
-                for (i = 0; i < 18; i++) {
-                    var gx = R() * size, gy = R() * size, gr = 30 + R() * 180;
-                    var blot = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
-                    blot.addColorStop(0, 'rgba(50,40,28,' + (0.04 + R() * 0.07) + ')');
-                    blot.addColorStop(1, 'rgba(50,40,28,0)');
-                    g.fillStyle = blot;
-                    g.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
-                }
-                vault.style.setProperty('--tex', 'url(' + c.toDataURL('image/jpeg', 0.88) + ')');
-            } catch (e) {}
-
-            var door = vault.querySelector('.vault-door');
-            for (i = 1; i <= 14; i++) add(door, 'vault-layer', { '--z': (i * 2) + 'px' });
-            door.appendChild(vault.querySelector('.vault-face'));
-
-            var revealTimer = setTimeout(reveal, 6500);
-            var doneTimer = setTimeout(finish, 8400);
-
-            function reveal() { document.body.classList.remove('vault-active'); }
-            function finish() { vault.remove(); }
-
-            vault.addEventListener('click', function () {
-                clearTimeout(revealTimer);
-                clearTimeout(doneTimer);
-                vault.classList.add('vault-skip');
-                reveal();
-                setTimeout(finish, 50);
-            });
-        })();
-    </script>
     <script>
         // Candle flicker: layered sine "noise" plus occasional gusts
         (function () {
