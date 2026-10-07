@@ -726,8 +726,8 @@
             pointer-events: none;
         }
 
-        .candle-left { left: calc(50% - 286px - 130px); }
-        .candle-right { right: calc(50% - 286px - 130px); }
+        .candle-left { left: calc(50% - 286px - 145px); }
+        .candle-right { right: calc(50% - 286px - 145px); }
 
         @media (min-width: 1000px) {
             .candle { display: block; }
@@ -801,23 +801,21 @@
         .clocks {
             display: flex;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 2.2rem;
             margin-top: auto;
             padding-top: 2.5rem;
         }
 
         .clock {
-            flex: 0 0 64px;
+            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
         }
 
-        .clock[hidden] { display: none; }
-
         .clock svg {
-            width: 50px;
+            width: 72px;
             height: auto;
             overflow: visible;
             filter: drop-shadow(1px 3px 3px rgba(59, 40, 20, 0.35));
@@ -826,16 +824,16 @@
         .clock-city {
             margin-top: 0.35rem;
             font-family: 'Cinzel', serif;
-            font-size: 0.46rem;
+            font-size: 0.56rem;
             font-weight: 500;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
             color: #5a4130;
             white-space: nowrap;
         }
 
         .clock-time {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-style: italic;
             line-height: 1.3;
             color: #8b6b48;
@@ -1258,15 +1256,9 @@
         // Steampunk world clocks
         (function () {
             var CITIES = [
-                // [name, time zone, fallback zone], priority (1 = kept longest on narrow screens)
-                ['San Francisco', 'America/Los_Angeles', null, 1],
-                ['New York', 'America/New_York', null, 2],
-                ['London', 'Europe/London', null, 1],
-                ['Paris', 'Europe/Paris', null, 4],
-                ['Kyiv', 'Europe/Kyiv', 'Europe/Kiev', 3],
-                ['Jakarta', 'Asia/Jakarta', null, 4],
-                ['Shanghai', 'Asia/Shanghai', null, 3],
-                ['Tokyo', 'Asia/Tokyo', null, 1]
+                ['New York', 'America/New_York'],
+                ['London', 'Europe/London'],
+                ['Paris', 'Europe/Paris']
             ];
             var host = document.getElementById('clocks');
             if (!host) return;
@@ -1355,17 +1347,13 @@
             host.insertAdjacentHTML('beforebegin', defs);
 
             var clocks = CITIES.map(function (c) {
-                var fmt;
-                try { fmt = new Intl.DateTimeFormat('en-GB', { timeZone: c[1], hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }); }
-                catch (e) { fmt = new Intl.DateTimeFormat('en-GB', { timeZone: c[2], hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }); }
+                var fmt = new Intl.DateTimeFormat('en-GB', { timeZone: c[1], hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' });
                 var el = document.createElement('div');
                 el.className = 'clock';
                 el.innerHTML = '<svg viewBox="-60 -85 120 145" role="img" aria-label="' + c[0] + ' time">' + face + '</svg>' +
                     '<div class="clock-city">' + c[0] + '</div><div class="clock-time"></div>';
                 host.appendChild(el);
                 return {
-                    el: el,
-                    priority: c[3],
                     fmt: fmt,
                     hour: el.querySelector('.clock-hour'),
                     min: el.querySelector('.clock-min'),
@@ -1373,17 +1361,6 @@
                     text: el.querySelector('.clock-time')
                 };
             });
-
-            // Smart truncation: drop the lowest-priority cities until the row fits,
-            // so a phone still shows a spread of time zones in west-to-east order.
-            function fit() {
-                var avail = host.clientWidth, gap = 8, cell = 64;
-                var n = Math.max(1, Math.floor((avail + gap) / (cell + gap)));
-                var keep = clocks.slice().sort(function (a, b) { return a.priority - b.priority; }).slice(0, n);
-                clocks.forEach(function (c) { c.el.hidden = keep.indexOf(c) < 0; });
-            }
-            fit();
-            window.addEventListener('resize', fit);
 
             function tick() {
                 var now = new Date(), totalSec = Math.floor(now.getTime() / 1000);
