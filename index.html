@@ -799,43 +799,46 @@
 
         /* ---------- World clocks (steampunk) ---------- */
         .clocks {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.6rem 1.2rem;
-            margin-top: 0.6rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: auto;
+            padding-top: 2.5rem;
         }
 
         .clock {
+            flex: 0 0 64px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
         }
 
+        .clock[hidden] { display: none; }
+
         .clock svg {
-            width: 100%;
-            max-width: 118px;
+            width: 50px;
             height: auto;
             overflow: visible;
-            filter: drop-shadow(2px 5px 5px rgba(59, 40, 20, 0.35));
+            filter: drop-shadow(1px 3px 3px rgba(59, 40, 20, 0.35));
         }
 
         .clock-city {
-            margin-top: 0.55rem;
+            margin-top: 0.35rem;
             font-family: 'Cinzel', serif;
-            font-size: 0.62rem;
+            font-size: 0.46rem;
             font-weight: 500;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #5a4130;
             white-space: nowrap;
         }
 
         .clock-time {
-            font-size: 0.82rem;
+            font-size: 0.7rem;
             font-style: italic;
+            line-height: 1.3;
             color: #8b6b48;
-            letter-spacing: 0.03em;
         }
 
         .clock-sec {
@@ -856,12 +859,6 @@
 
         @keyframes clock-gear-spin {
             to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 520px) {
-            .clocks { gap: 1.2rem 0.6rem; }
-            .clock-city { font-size: 0.5rem; letter-spacing: 0.12em; }
-            .clock-time { font-size: 0.72rem; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1217,9 +1214,6 @@
                 <a href="mailto:danielsakakini@gmail.com">Email</a>
                 <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
             </div>
-
-            <div class="divider"></div>
-
             <div class="clocks" id="clocks" aria-label="World clocks"></div>
         </div>
     </div>
@@ -1264,14 +1258,15 @@
         // Steampunk world clocks
         (function () {
             var CITIES = [
-                ['San Francisco', 'America/Los_Angeles'],
-                ['New York', 'America/New_York'],
-                ['London', 'Europe/London'],
-                ['Paris', 'Europe/Paris'],
-                ['Kyiv', 'Europe/Kyiv', 'Europe/Kiev'],
-                ['Jakarta', 'Asia/Jakarta'],
-                ['Shanghai', 'Asia/Shanghai'],
-                ['Tokyo', 'Asia/Tokyo']
+                // [name, time zone, fallback zone], priority (1 = kept longest on narrow screens)
+                ['San Francisco', 'America/Los_Angeles', null, 1],
+                ['New York', 'America/New_York', null, 2],
+                ['London', 'Europe/London', null, 1],
+                ['Paris', 'Europe/Paris', null, 4],
+                ['Kyiv', 'Europe/Kyiv', 'Europe/Kiev', 3],
+                ['Jakarta', 'Asia/Jakarta', null, 4],
+                ['Shanghai', 'Asia/Shanghai', null, 3],
+                ['Tokyo', 'Asia/Tokyo', null, 1]
             ];
             var host = document.getElementById('clocks');
             if (!host) return;
@@ -1369,6 +1364,8 @@
                     '<div class="clock-city">' + c[0] + '</div><div class="clock-time"></div>';
                 host.appendChild(el);
                 return {
+                    el: el,
+                    priority: c[3],
                     fmt: fmt,
                     hour: el.querySelector('.clock-hour'),
                     min: el.querySelector('.clock-min'),
@@ -1376,6 +1373,17 @@
                     text: el.querySelector('.clock-time')
                 };
             });
+
+            // Smart truncation: drop the lowest-priority cities until the row fits,
+            // so a phone still shows a spread of time zones in west-to-east order.
+            function fit() {
+                var avail = host.clientWidth, gap = 8, cell = 64;
+                var n = Math.max(1, Math.floor((avail + gap) / (cell + gap)));
+                var keep = clocks.slice().sort(function (a, b) { return a.priority - b.priority; }).slice(0, n);
+                clocks.forEach(function (c) { c.el.hidden = keep.indexOf(c) < 0; });
+            }
+            fit();
+            window.addEventListener('resize', fit);
 
             function tick() {
                 var now = new Date(), totalSec = Math.floor(now.getTime() / 1000);
