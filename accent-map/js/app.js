@@ -133,20 +133,30 @@
     updatePinScales();
   }
 
+  // Push-pin geometry is drawn around its needle tip at (0,0) in "pinSize = 14" units
+  function pinScale() {
+    return (T.pinSize / 14) * 3.2 * (isMobile ? 2.4 : 1) / ZOOM.level;
+  }
+  function pinPosTransform(x, y) {
+    return `translate(${x} ${y}) scale(${pinScale()})`;
+  }
+  function pinLabelY(y) {
+    return y - (36 * pinScale() + 8 / ZOOM.level);
+  }
+
   // Keep pins a constant screen size regardless of zoom level
   function updatePinScales() {
     const inv = 1 / ZOOM.level;
     pinsLayer.querySelectorAll('.pin-group').forEach(g => {
       const pin  = pins.find(p => p.id === g.dataset.id);
-      const dot  = g.querySelector('.pin-dot');
+      const pos  = g.querySelector('.pin-pos');
       const halo = g.querySelector('.pin-halo');
       const zone = g.querySelector('.pin-zone');
       const lbl  = g.querySelector('.pin-label');
-      const dotR = T.pinSize * (isMobile ? 4.4 : 1) * inv;
-      if (dot)  { dot.setAttribute('r', String(dotR)); dot.style.strokeWidth = String(2.5 * inv); }
+      if (pos && pin) pos.setAttribute('transform', pinPosTransform(pin.x, pin.y));
       if (halo) halo.setAttribute('r', String(T.pinSize * 1.7 * inv));
       if (zone) zone.setAttribute('r', String((pin?.radius || T.defaultRadius) * inv));
-      if (lbl && pin) lbl.setAttribute('y', String(pin.y - (T.pinSize * 1.7 + 8) * inv));
+      if (lbl && pin) lbl.setAttribute('y', String(pinLabelY(pin.y)));
     });
   }
 
@@ -203,8 +213,10 @@
       pinDrag.moved = true;
       pinDrag.el.querySelectorAll('[cx]').forEach(el => el.setAttribute('cx', String(nx)));
       pinDrag.el.querySelectorAll('[cy]').forEach(el => el.setAttribute('cy', String(ny)));
+      const pos = pinDrag.el.querySelector('.pin-pos');
+      if (pos) pos.setAttribute('transform', pinPosTransform(nx, ny));
       const lbl = pinDrag.el.querySelector('.pin-label');
-      if (lbl) { lbl.setAttribute('x', String(nx)); lbl.setAttribute('y', String(ny - (T.pinSize * 1.7 + 8) / ZOOM.level)); }
+      if (lbl) { lbl.setAttribute('x', String(nx)); lbl.setAttribute('y', String(pinLabelY(ny))); }
       return;
     }
     if (!drag) return;
@@ -522,19 +534,27 @@
       halo.setAttribute('fill', hexToRgba(T.pinColor, 0.22));
       g.appendChild(halo);
 
-      const dot = document.createElementNS(SVG_NS, 'circle');
-      dot.setAttribute('class', 'pin-dot');
-      dot.setAttribute('cx', pin.x);
-      dot.setAttribute('cy', pin.y);
-      dot.setAttribute('r',  String(T.pinSize));
-      dot.setAttribute('fill', T.pinColor);
-      g.appendChild(dot);
+      // Push pin: shadow on the map, steel needle, glossy red head.
+      // .pin-pos places it; .pin-dot is free for CSS hover/flash transforms.
+      const pos = document.createElementNS(SVG_NS, 'g');
+      pos.setAttribute('class', 'pin-pos');
+      pos.setAttribute('transform', pinPosTransform(pin.x, pin.y));
+      pos.innerHTML = `
+        <g class="pin-dot">
+          <ellipse class="pin-shadow" cx="13" cy="-9" rx="7.5" ry="4.5" />
+          <line class="pin-needle-shadow" x1="0" y1="0" x2="10" y2="-7" />
+          <ellipse class="pin-hole" cx="0" cy="0" rx="1.6" ry="1" />
+          <line class="pin-needle" x1="0" y1="0" x2="-5" y2="-21" />
+          <circle class="pin-head" cx="-6" cy="-26" r="7.5" />
+          <ellipse class="pin-gloss" cx="-8.6" cy="-29" rx="2.6" ry="1.6" transform="rotate(-35 -8.6 -29)" />
+        </g>`;
+      g.appendChild(pos);
 
       if (pin.country || pin.accent) {
         const label = document.createElementNS(SVG_NS, 'text');
         label.setAttribute('class', 'pin-label');
         label.setAttribute('x', pin.x);
-        label.setAttribute('y', pin.y - (T.pinSize * 1.7 + 8));
+        label.setAttribute('y', pinLabelY(pin.y));
         label.textContent = pin.country || pin.accent;
         g.appendChild(label);
       }
