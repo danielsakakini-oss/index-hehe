@@ -1504,7 +1504,23 @@
                     var on = !!ctx && ctx.state === 'running' && !muted;
                     btn.classList.toggle('on', on);
                     btn.setAttribute('aria-label', on ? 'Mute sound' : 'Turn on sound');
+                    btn.querySelector('span').textContent = on || muted ? 'Sound' : 'Tap for sound';
                 }
+
+                // Sound is on by default. Browsers keep audio locked until the visitor's
+                // first tap, click or key press, so unlock it on the very first one.
+                var unlockedAt = 0;
+                function locked() { return !!ctx && ctx.state !== 'running' && !muted; }
+                function unlock() {
+                    if (!locked()) return;
+                    unlockedAt = performance.now();
+                    ctx.resume().then(function () { update(); schedule(); });
+                }
+                // true for the tap that unlocked sound (its click arrives just after)
+                function tapWasForSound() { return locked() || performance.now() - unlockedAt < 600; }
+                ['pointerdown', 'keydown', 'touchstart'].forEach(function (type) {
+                    document.addEventListener(type, unlock, { capture: true, passive: true });
+                });
 
                 btn.addEventListener('click', function (e) {
                     e.stopPropagation();   // don't skip the intro
@@ -1526,7 +1542,8 @@
                     },
                     stop: function () {
                         if (ctx) master.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
-                    }
+                    },
+                    tapWasForSound: tapWasForSound
                 };
             })();
 
@@ -1534,6 +1551,8 @@
             function finish() { vault.remove(); }
 
             vault.addEventListener('click', function () {
+                // while sound is still locked, the first tap switches it on rather than skipping
+                if (sfx.tapWasForSound()) return;
                 clearTimeout(revealTimer);
                 clearTimeout(doneTimer);
                 vault.classList.remove('vault-loading');
