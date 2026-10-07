@@ -722,14 +722,14 @@
             position: absolute;
             top: 9rem;
             width: 150px;
-            aspect-ratio: 120 / 300;
+            aspect-ratio: 120 / 380;
             pointer-events: none;
         }
 
-        .candle-left { left: calc(50% - 286px - 190px); }
-        .candle-right { right: calc(50% - 286px - 190px); }
+        .candle-left { left: calc(50% - 286px - 130px); }
+        .candle-right { right: calc(50% - 286px - 130px); }
 
-        @media (min-width: 1080px) {
+        @media (min-width: 1000px) {
             .candle { display: block; }
         }
 
@@ -745,7 +745,7 @@
         .candle-light {
             position: absolute;
             left: 50.8%;
-            top: 20%;
+            top: 13%;
             width: 520px;
             height: 520px;
             margin: -260px 0 0 -260px;
@@ -756,9 +756,9 @@
         .flame {
             position: absolute;
             left: 50.8%;
-            bottom: 74.4%;
+            bottom: 79.9%;
             width: 15%;
-            height: 18%;
+            height: 14.2%;
             transform-origin: 50% 100%;
             transform: translateX(-50%);
         }
@@ -795,6 +795,78 @@
             background: radial-gradient(ellipse at 50% 70%, rgba(70, 110, 255, 0.85), rgba(110, 90, 220, 0.35) 55%, transparent 80%);
             filter: blur(1px);
             mix-blend-mode: multiply;
+        }
+
+        /* ---------- World clocks (steampunk) ---------- */
+        .clocks {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.6rem 1.2rem;
+            margin-top: 0.6rem;
+        }
+
+        .clock {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .clock svg {
+            width: 100%;
+            max-width: 118px;
+            height: auto;
+            overflow: visible;
+            filter: drop-shadow(2px 5px 5px rgba(59, 40, 20, 0.35));
+        }
+
+        .clock-city {
+            margin-top: 0.55rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.62rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #5a4130;
+            white-space: nowrap;
+        }
+
+        .clock-time {
+            font-size: 0.82rem;
+            font-style: italic;
+            color: #8b6b48;
+            letter-spacing: 0.03em;
+        }
+
+        .clock-sec {
+            transform-box: view-box;
+            transform-origin: 0 0;
+            transition: transform 0.25s cubic-bezier(.4, 2.2, .5, 1);
+        }
+
+        .clock-gear {
+            transform-box: view-box;
+            animation: clock-gear-spin 24s linear infinite;
+        }
+
+        .clock-gear.rev {
+            animation-direction: reverse;
+            animation-duration: 15s;
+        }
+
+        @keyframes clock-gear-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 520px) {
+            .clocks { gap: 1.2rem 0.6rem; }
+            .clock-city { font-size: 0.5rem; letter-spacing: 0.12em; }
+            .clock-time { font-size: 0.72rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .clock-gear { animation: none; }
+            .clock-sec { transition: none; }
         }
 
         @media (max-width: 768px) {
@@ -1056,7 +1128,7 @@
                     </radialGradient>
                     <filter id="cBlur3"><feGaussianBlur stdDeviation="3"/></filter>
                     <filter id="cBlur1"><feGaussianBlur stdDeviation="1"/></filter>
-                    <symbol id="cChalice" viewBox="0 0 120 300">
+                    <symbol id="cChalice" viewBox="0 -80 120 380">
                         <!-- shadow on the page -->
                         <ellipse cx="60" cy="293" rx="46" ry="6" fill="#2b1e10" opacity="0.35" filter="url(#cBlur3)"/>
                         <!-- foot -->
@@ -1073,15 +1145,16 @@
                         <ellipse cx="60" cy="170" rx="40" ry="7.5" fill="url(#cBrass)"/>
                         <ellipse cx="60" cy="170" rx="37.5" ry="6" fill="url(#cInterior)"/>
                         <!-- candle -->
-                        <path d="M44 90 Q44 85 50 84.5 L70 84.5 Q76 85 76 90 L76 178 L44 178 Z" fill="url(#cWax)"/>
-                        <rect class="wax-glow" x="44" y="84" width="32" height="56" fill="url(#cWaxGlow)"/>
-                        <path d="M46.5 89 Q44.8 99 45.6 112 Q46.4 117 47.6 112 Q48.6 101 49.4 90 Z" fill="#f4ead6"/>
-                        <path d="M72 88 Q73.8 97 73.2 106 Q72.6 110 71.6 106 Q71 97 70.4 89 Z" fill="#efe3cb"/>
-                        <ellipse cx="60" cy="87" rx="15.6" ry="3.6" fill="#f1e4ca"/>
-                        <ellipse class="wax-pool" cx="60" cy="87.3" rx="11" ry="2.4" fill="url(#cPool)"/>
+                        <path d="M44 10 Q44 5 50 4.5 L70 4.5 Q76 5 76 10 L76 178 L44 178 Z" fill="url(#cWax)"/>
+                        <rect class="wax-glow" x="44" y="4" width="32" height="64" fill="url(#cWaxGlow)"/>
+                        <path d="M46.5 9 Q44.8 19 45.6 32 Q46.4 37 47.6 32 Q48.6 21 49.4 10 Z" fill="#f4ead6"/>
+                        <path d="M72 8 Q73.8 17 73.2 26 Q72.6 30 71.6 26 Q71 17 70.4 9 Z" fill="#efe3cb"/>
+                        <path d="M56 6 Q55 30 55.6 58 Q56.2 63 57 58 Q57.8 30 58.4 6 Z" fill="#f6eddb" opacity="0.8"/>
+                        <ellipse cx="60" cy="7" rx="15.6" ry="3.6" fill="#f1e4ca"/>
+                        <ellipse class="wax-pool" cx="60" cy="7.3" rx="11" ry="2.4" fill="url(#cPool)"/>
                         <!-- wick -->
-                        <path d="M60 87.5 Q59.2 82 60.6 76.5" stroke="#1a120a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                        <circle cx="60.7" cy="76.4" r="1" fill="#ff7a2a"/>
+                        <path d="M60 7.5 Q59.2 2 60.6 -3.5" stroke="#1a120a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                        <circle cx="60.7" cy="-3.6" r="1" fill="#ff7a2a"/>
                         <!-- front of the cup, hiding the candle base -->
                         <path d="M20 170 A40 7.5 0 0 0 100 170 Q98 205 69 212 L51 212 Q22 205 20 170 Z" fill="url(#cBrass)"/>
                         <path d="M20 170 A40 7.5 0 0 0 100 170 Q98 205 69 212 L51 212 Q22 205 20 170 Z" fill="url(#cBrassV)"/>
@@ -1144,6 +1217,10 @@
                 <a href="mailto:danielsakakini@gmail.com">Email</a>
                 <a href="https://www.instagram.com/d4nsak/" target="_blank">Instagram</a>
             </div>
+
+            <div class="divider"></div>
+
+            <div class="clocks" id="clocks" aria-label="World clocks"></div>
         </div>
     </div>
 
@@ -1181,6 +1258,140 @@
                 requestAnimationFrame(frame);
             }
             requestAnimationFrame(frame);
+        })();
+    </script>
+    <script>
+        // Steampunk world clocks
+        (function () {
+            var CITIES = [
+                ['San Francisco', 'America/Los_Angeles'],
+                ['New York', 'America/New_York'],
+                ['London', 'Europe/London'],
+                ['Paris', 'Europe/Paris'],
+                ['Kyiv', 'Europe/Kyiv', 'Europe/Kiev'],
+                ['Jakarta', 'Asia/Jakarta'],
+                ['Shanghai', 'Asia/Shanghai'],
+                ['Tokyo', 'Asia/Tokyo']
+            ];
+            var host = document.getElementById('clocks');
+            if (!host) return;
+            var SVG = 'http://www.w3.org/2000/svg';
+
+            function gearPath(cx, cy, teeth, rOut, rIn, rHole) {
+                var d = '', step = Math.PI * 2 / teeth;
+                for (var i = 0; i < teeth; i++) {
+                    var a = i * step;
+                    var pts = [[rIn, a], [rOut, a + step * 0.15], [rOut, a + step * 0.45], [rIn, a + step * 0.6]];
+                    pts.forEach(function (p, j) {
+                        var x = (cx + Math.cos(p[1]) * p[0]).toFixed(2), y = (cy + Math.sin(p[1]) * p[0]).toFixed(2);
+                        d += (i === 0 && j === 0 ? 'M' : 'L') + x + ' ' + y + ' ';
+                    });
+                }
+                d += 'Z ';
+                // centre hole plus three spoke windows (cut out via evenodd)
+                d += 'M' + (cx + rHole) + ' ' + cy + ' a' + rHole + ' ' + rHole + ' 0 1 0 ' + (-2 * rHole) + ' 0 a' + rHole + ' ' + rHole + ' 0 1 0 ' + (2 * rHole) + ' 0 ';
+                var wr = (rIn - rHole) * 0.32, wd = (rIn + rHole) / 2;
+                for (var k = 0; k < 3; k++) {
+                    var wa = k * Math.PI * 2 / 3 + 0.5, wx = cx + Math.cos(wa) * wd, wy = cy + Math.sin(wa) * wd;
+                    d += 'M' + (wx + wr).toFixed(2) + ' ' + wy.toFixed(2) + ' a' + wr.toFixed(2) + ' ' + wr.toFixed(2) + ' 0 1 0 ' + (-2 * wr).toFixed(2) + ' 0 a' + wr.toFixed(2) + ' ' + wr.toFixed(2) + ' 0 1 0 ' + (2 * wr).toFixed(2) + ' 0 ';
+                }
+                return d;
+            }
+
+            var ROMAN = ['XII', 'I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+            var ticks = '', numerals = '', rivets = '';
+            for (var i = 0; i < 60; i++) {
+                var a = i * 6 * Math.PI / 180, big = i % 5 === 0;
+                var r1 = big ? 40 : 42.5, r2 = 45;
+                ticks += '<line x1="' + (Math.sin(a) * r1).toFixed(2) + '" y1="' + (-Math.cos(a) * r1).toFixed(2) + '" x2="' + (Math.sin(a) * r2).toFixed(2) + '" y2="' + (-Math.cos(a) * r2).toFixed(2) + '" stroke="#3b2a16" stroke-width="' + (big ? 1.6 : 0.6) + '"/>';
+            }
+            for (i = 0; i < 12; i++) {
+                if (i === 6) continue; // gear window sits here
+                var na = i * 30 * Math.PI / 180;
+                numerals += '<text x="' + (Math.sin(na) * 33).toFixed(2) + '" y="' + (-Math.cos(na) * 33 + 2.6).toFixed(2) + '" transform="rotate(' + (i * 30) + ' ' + (Math.sin(na) * 33).toFixed(2) + ' ' + (-Math.cos(na) * 33).toFixed(2) + ')">' + ROMAN[i] + '</text>';
+            }
+            for (i = 0; i < 12; i++) {
+                var ra = (i * 30 + 15) * Math.PI / 180;
+                rivets += '<circle cx="' + (Math.sin(ra) * 51.5).toFixed(2) + '" cy="' + (-Math.cos(ra) * 51.5).toFixed(2) + '" r="1.7" fill="url(#clkRivet)"/>';
+            }
+
+            var face =
+                '<rect x="-7" y="-66" width="14" height="9" rx="2" fill="url(#clkBrassH)" stroke="#4a3010" stroke-width="0.6"/>' +
+                '<rect x="-4.5" y="-71" width="9" height="6" rx="1.5" fill="url(#clkBrassH)" stroke="#4a3010" stroke-width="0.6"/>' +
+                '<circle cx="0" cy="-77" r="6" fill="none" stroke="url(#clkBrassH)" stroke-width="2.4"/>' +
+                '<circle r="57" fill="url(#clkBezel)" stroke="#3a240b" stroke-width="1"/>' +
+                '<circle r="54.5" fill="none" stroke="#5a3b14" stroke-width="2.6" stroke-dasharray="1.2 1.4" opacity="0.8"/>' +
+                rivets +
+                '<circle r="48" fill="url(#clkBezelIn)" stroke="#2e1d09" stroke-width="0.8"/>' +
+                '<circle r="46.5" fill="url(#clkFace)"/>' +
+                '<circle r="46.5" fill="url(#clkVignette)"/>' +
+                // gear window
+                '<circle cx="0" cy="22" r="13.5" fill="#1d140a" stroke="url(#clkBrassH)" stroke-width="2"/>' +
+                '<g clip-path="url(#clkWindow)">' +
+                    '<path class="clock-gear" style="transform-origin: -4px 22px" d="' + gearPath(-4, 22, 12, 11, 9, 2) + '" fill="url(#clkGear)" fill-rule="evenodd"/>' +
+                    '<path class="clock-gear rev" style="transform-origin: 9px 14px" d="' + gearPath(9, 14, 9, 7.5, 6, 1.5) + '" fill="url(#clkGearDark)" fill-rule="evenodd"/>' +
+                '</g>' +
+                '<circle cx="0" cy="22" r="13.5" fill="url(#clkGlass)"/>' +
+                ticks +
+                '<g font-family="Cinzel, serif" font-size="7.5" font-weight="600" fill="#3b2a16" text-anchor="middle">' + numerals + '</g>' +
+                // hands
+                '<g class="clock-hour"><path d="M-1.8 6 L-2.2 -12 Q-6 -16 0 -25 Q6 -16 2.2 -12 L1.8 6 Z" fill="#2b1c0d" stroke="#c49a52" stroke-width="0.6"/><circle cx="0" cy="-16.5" r="2" fill="url(#clkFace)"/></g>' +
+                '<g class="clock-min"><path d="M-1.3 8 L-1.5 -30 L0 -40 L1.5 -30 L1.3 8 Z" fill="#2b1c0d" stroke="#c49a52" stroke-width="0.5"/><circle cx="0" cy="-30" r="2.3" fill="none" stroke="#2b1c0d" stroke-width="1"/></g>' +
+                '<g class="clock-sec"><line x1="0" y1="12" x2="0" y2="-42" stroke="#9c2b1c" stroke-width="0.7"/><circle cx="0" cy="9" r="2.6" fill="#9c2b1c"/></g>' +
+                '<circle r="3.8" fill="url(#clkBrassH)" stroke="#3a240b" stroke-width="0.6"/>' +
+                '<circle r="1.3" fill="#2b1c0d"/>' +
+                // glass reflection
+                '<path d="M-38 -18 A40 40 0 0 1 -6 -42 A44 44 0 0 0 -32 -10 Z" fill="#ffffff" opacity="0.22"/>' +
+                '<circle r="46.5" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.2"/>';
+
+            var defs =
+                '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>' +
+                '<linearGradient id="clkBezel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe4a6"/><stop offset="0.25" stop-color="#c9973f"/><stop offset="0.5" stop-color="#6e4615"/><stop offset="0.72" stop-color="#d8ad60"/><stop offset="1" stop-color="#4a2e0c"/></linearGradient>' +
+                '<linearGradient id="clkBezelIn" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f2cf86"/><stop offset="0.5" stop-color="#8a5e22"/><stop offset="1" stop-color="#3e2709"/></linearGradient>' +
+                '<linearGradient id="clkBrassH" x1="0" x2="1"><stop offset="0" stop-color="#5a3c14"/><stop offset="0.35" stop-color="#f3d58f"/><stop offset="0.6" stop-color="#b8873a"/><stop offset="1" stop-color="#4a3010"/></linearGradient>' +
+                '<radialGradient id="clkFace" cx="0.42" cy="0.38" r="0.7"><stop offset="0" stop-color="#fbf2dc"/><stop offset="0.65" stop-color="#ecdab0"/><stop offset="1" stop-color="#cfb27a"/></radialGradient>' +
+                '<radialGradient id="clkVignette" cx="0.5" cy="0.5" r="0.5"><stop offset="0.7" stop-color="#5a3b14" stop-opacity="0"/><stop offset="1" stop-color="#5a3b14" stop-opacity="0.35"/></radialGradient>' +
+                '<radialGradient id="clkRivet" cx="0.35" cy="0.3" r="0.7"><stop offset="0" stop-color="#fff3cf"/><stop offset="0.5" stop-color="#b8873a"/><stop offset="1" stop-color="#3e2709"/></radialGradient>' +
+                '<linearGradient id="clkGear" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1d08a"/><stop offset="1" stop-color="#8a5e22"/></linearGradient>' +
+                '<linearGradient id="clkGearDark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9a265"/><stop offset="1" stop-color="#5e3d12"/></linearGradient>' +
+                '<radialGradient id="clkGlass" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/><stop offset="0.5" stop-color="#ffffff" stop-opacity="0.05"/><stop offset="1" stop-color="#000000" stop-opacity="0.35"/></radialGradient>' +
+                '<clipPath id="clkWindow"><circle cx="0" cy="22" r="12.5"/></clipPath>' +
+                '</defs></svg>';
+            host.insertAdjacentHTML('beforebegin', defs);
+
+            var clocks = CITIES.map(function (c) {
+                var fmt;
+                try { fmt = new Intl.DateTimeFormat('en-GB', { timeZone: c[1], hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }); }
+                catch (e) { fmt = new Intl.DateTimeFormat('en-GB', { timeZone: c[2], hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }); }
+                var el = document.createElement('div');
+                el.className = 'clock';
+                el.innerHTML = '<svg viewBox="-60 -85 120 145" role="img" aria-label="' + c[0] + ' time">' + face + '</svg>' +
+                    '<div class="clock-city">' + c[0] + '</div><div class="clock-time"></div>';
+                host.appendChild(el);
+                return {
+                    fmt: fmt,
+                    hour: el.querySelector('.clock-hour'),
+                    min: el.querySelector('.clock-min'),
+                    sec: el.querySelector('.clock-sec'),
+                    text: el.querySelector('.clock-time')
+                };
+            });
+
+            function tick() {
+                var now = new Date(), totalSec = Math.floor(now.getTime() / 1000);
+                clocks.forEach(function (c) {
+                    var parts = {};
+                    c.fmt.formatToParts(now).forEach(function (p) { parts[p.type] = +p.value; });
+                    var h = parts.hour % 24, m = parts.minute, s = parts.second;
+                    c.hour.setAttribute('transform', 'rotate(' + ((h % 12) * 30 + m * 0.5 + s / 120) + ')');
+                    c.min.setAttribute('transform', 'rotate(' + (m * 6 + s * 0.1) + ')');
+                    // ever-increasing angle so the tick never sweeps backwards at :00
+                    c.sec.style.transform = 'rotate(' + (totalSec * 6) + 'deg)';
+                    c.text.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+                });
+            }
+            tick();
+            setTimeout(function () { tick(); setInterval(tick, 1000); }, 1000 - (Date.now() % 1000));
         })();
     </script>
 </body>
