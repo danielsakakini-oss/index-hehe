@@ -38,6 +38,7 @@
             background: #f5ede3;
             padding: 4.5rem max(4rem, calc(50% - 286px));
             position: relative;
+            overflow-x: clip; /* candle glow can't widen the page */
         }
 
         /* Decorative corner accents in all four corners */
@@ -439,25 +440,19 @@
                 0 6px 16px rgba(0,0,0,0.55);
         }
 
+        /* Name engraved around the ring between the centre plate and the outer groove */
         .vault-engraving {
             position: absolute;
             inset: 0;
+            width: 100%;
+            height: 100%;
             font-family: 'Cinzel', serif;
             font-weight: 600;
-            font-size: calc(var(--d) * 0.03);
-            letter-spacing: 0.45em;
-            color: rgba(38, 36, 32, 0.6);
-            text-shadow: 0 1px 0 rgba(255,255,255,0.3), 0 -1px 0 rgba(0,0,0,0.25);
+            font-size: 6.2px;
         }
 
-        .vault-engraving span {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-        }
-
-        .vault-engraving .top { top: 14.5%; }
+        .vault-engraving .cut { fill: rgba(34, 32, 28, 0.7); }
+        .vault-engraving .lip { fill: rgba(255, 255, 255, 0.32); }
 
         .vault-bolt {
             position: absolute;
@@ -726,8 +721,8 @@
             pointer-events: none;
         }
 
-        .candle-left { left: calc(50% - 286px - 145px); }
-        .candle-right { right: calc(50% - 286px - 145px); }
+        .candle-left { left: calc(50% - 286px - 165px); }
+        .candle-right { right: calc(50% - 286px - 165px); }
 
         @media (min-width: 1000px) {
             .candle { display: block; }
@@ -801,7 +796,7 @@
         .clocks {
             display: flex;
             justify-content: center;
-            gap: 2.2rem;
+            gap: 4.4rem;
             margin-top: auto;
             padding-top: 2.5rem;
         }
@@ -931,7 +926,11 @@
                         <div class="vault-ring r1"></div>
                         <div class="vault-face-rivets"></div>
                         <div class="vault-ring r2"></div>
-                        <div class="vault-engraving"><span class="top">Sakakini</span></div>
+                        <svg class="vault-engraving" viewBox="0 0 100 100" aria-hidden="true">
+                            <path id="vaultNameRing" d="M50 18.6 a31.4 31.4 0 1 1 0 62.8 a31.4 31.4 0 1 1 0 -62.8" fill="none"/>
+                            <text class="lip" transform="translate(0 0.35)"><textPath href="#vaultNameRing" textLength="197" lengthAdjust="spacing">SAKAKINI • SAKAKINI • SAKAKINI • </textPath></text>
+                            <text class="cut"><textPath href="#vaultNameRing" textLength="197" lengthAdjust="spacing">SAKAKINI • SAKAKINI • SAKAKINI • </textPath></text>
+                        </svg>
                         <div class="vault-wheel-shadow">
                             <div class="vault-wheel">
                                 <div class="vault-spoke"></div>
