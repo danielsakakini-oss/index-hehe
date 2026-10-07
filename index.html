@@ -316,6 +316,49 @@
         .vault-sound.on .waves { display: inline; }
         .vault-sound.on .mute { display: none; }
 
+        /* Waiting for the tap that unlocks sound: door shown, mechanism paused */
+        #vault.vault-waiting,
+        #vault.vault-waiting * {
+            animation-play-state: paused !important;
+        }
+
+        #vault.vault-waiting .vault-fade,
+        #vault.vault-waiting .vault-prompt {
+            animation-play-state: running !important;
+        }
+
+        .vault-prompt {
+            display: none;
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            z-index: 2;
+            transform: translateX(-50%);
+            padding: 8px 18px;
+            border: 1px solid rgba(222, 196, 150, 0.45);
+            border-radius: 99px;
+            background: rgba(20, 17, 14, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            font-family: 'Cinzel', serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: rgba(240, 224, 192, 0.95);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        #vault.vault-waiting .vault-prompt {
+            display: block;
+            animation: vault-prompt-pulse 2.2s ease-in-out infinite;
+        }
+
+        @keyframes vault-prompt-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
         .vault-glow,
         .vault-lip,
         .vault-frame,
@@ -953,6 +996,7 @@
         </div>
         <div class="vault-rays"></div>
         <div class="vault-fade"></div>
+        <div class="vault-prompt">Tap to open</div>
         <button class="vault-sound" type="button" aria-label="Turn on sound">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="mute" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span>Sound</span>
@@ -1078,16 +1122,31 @@
             // If anything is slow, start anyway with the CSS-drawn vault rather than a long blank screen
             var timeout = new Promise(function (r) { setTimeout(function () { r(null); }, 4000); });
 
-            var revealTimer, doneTimer;
+            var revealTimer, doneTimer, waitTimer, began = false;
             Promise.race([Promise.all(assets).then(function () { return hdReady; }), timeout]).then(function (mountHD) {
                 if (mountHD) mountHD();
-                requestAnimationFrame(function () {
-                    vault.classList.remove('vault-loading');
-                    sfx.start();
-                    revealTimer = setTimeout(reveal, 6500);
-                    doneTimer = setTimeout(finish, 8400);
+                // Sound is part of the intro. If the browser already allows audio, play right
+                // away; otherwise hold on the closed door until the visitor's tap unlocks it
+                // (after 8 s it opens anyway, silently, so nobody is stuck).
+                sfx.canPlay().then(function (ok) {
+                    requestAnimationFrame(function () {
+                        if (ok) return begin();
+                        vault.classList.remove('vault-loading');
+                        vault.classList.add('vault-waiting');
+                        waitTimer = setTimeout(begin, 8000);
+                    });
                 });
             });
+
+            function begin() {
+                if (began) return;
+                began = true;
+                clearTimeout(waitTimer);
+                vault.classList.remove('vault-loading', 'vault-waiting');
+                sfx.start();
+                revealTimer = setTimeout(reveal, 6500);
+                doneTimer = setTimeout(finish, 8400);
+            }
 
             // ---- HD: metal parts lit per pixel at device resolution, rendered in workers ----
             function renderHD() {
@@ -1456,6 +1515,7 @@
                 });
 
                 btn.addEventListener('click', function (e) {
+                    if (vault.classList.contains('vault-waiting')) return;   // let the tap open the door
                     e.stopPropagation();   // don't skip the intro
                     setup();
                     if (!ctx) return;
@@ -1465,6 +1525,16 @@
 
                 return {
                     // try to play straight away; browsers allow it only if the visitor has interacted before
+                    // resolves true if audio may play without a tap
+                    canPlay: function () {
+                        try { setup(); } catch (e) { return Promise.resolve(false); }
+                        if (!ctx) return Promise.resolve(false);
+                        if (ctx.state === 'running') return Promise.resolve(true);
+                        return Promise.race([
+                            ctx.resume().then(function () { return ctx.state === 'running'; }, function () { return false; }),
+                            new Promise(function (r) { setTimeout(function () { r(false); }, 200); })
+                        ]);
+                    },
                     start: function () {
                         t0 = performance.now();
                         try { setup(); } catch (e) { return; }
@@ -1484,6 +1554,8 @@
             function finish() { vault.remove(); }
 
             vault.addEventListener('click', function () {
+                // waiting for a tap: this one unlocks sound and opens the door
+                if (!began && vault.classList.contains('vault-waiting')) return begin();
                 // while sound is still locked, the first tap switches it on rather than skipping
                 if (sfx.tapWasForSound()) return;
                 clearTimeout(revealTimer);
