@@ -247,15 +247,15 @@
             height: var(--d);
             background: radial-gradient(circle, #fff6e6 0%, #ffe2b4 40%, rgba(232, 176, 108, 0.85) 75%, rgba(150, 100, 50, 0.6) 100%);
             opacity: 0;
-            animation: vault-glow 2.6s ease-in-out 3.7s forwards;
+            animation: vault-glow 2.6s ease-in-out 5.3s forwards;
         }
 
         .vault-scene {
             position: absolute;
             inset: 0;
             animation:
-                vault-shake 0.45s linear 3.55s,
-                vault-out 1.5s cubic-bezier(.6, 0, .4, 1) 5.2s forwards;
+                vault-shake 0.45s linear 5.15s,
+                vault-out 1.5s cubic-bezier(.6, 0, .4, 1) 6.8s forwards;
         }
 
         .vault-wall {
@@ -306,9 +306,9 @@
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: var(--noise);
+            background: var(--tex, var(--noise)) center / cover;
             mix-blend-mode: overlay;
-            opacity: 0.5;
+            opacity: 0.8;
         }
 
         .vault-frame-rivets {
@@ -348,7 +348,7 @@
             inset: 0;
             transform-origin: 0% 50%;
             transform-style: preserve-3d;
-            animation: vault-door-open 1.9s cubic-bezier(.5, 0, .25, 1) 3.7s forwards;
+            animation: vault-door-open 1.9s cubic-bezier(.5, 0, .25, 1) 5.3s forwards;
         }
 
         /* Stacked discs give the door real thickness as it swings */
@@ -367,8 +367,7 @@
             border-radius: 50%;
             background:
                 conic-gradient(from 200deg, rgba(255,255,255,0.32), rgba(0,0,0,0.24) 40deg, rgba(255,255,255,0.2) 95deg, rgba(0,0,0,0.3) 150deg, rgba(255,255,255,0.28) 205deg, rgba(0,0,0,0.22) 260deg, rgba(255,255,255,0.16) 310deg, rgba(255,255,255,0.32)),
-                repeating-conic-gradient(rgba(255,255,255,0.05) 0 0.4deg, rgba(0,0,0,0.07) 0.4deg 0.9deg, rgba(255,255,255,0.03) 0.9deg 1.5deg),
-                radial-gradient(circle at 40% 35%, #aeafaa, #7d7e79 55%, #4a4b47);
+                var(--tex, radial-gradient(circle at 40% 35%, #aeafaa, #7d7e79 55%, #4a4b47)) center / cover;
             box-shadow:
                 inset 0 0 0 3px #222321,
                 inset 0 0 0 5px #c4c5c0,
@@ -376,7 +375,9 @@
                 inset 0 0 0 11px rgba(176, 138, 85, 0.95),
                 inset 0 0 0 13px #2a2b29,
                 inset 0 -18px 34px rgba(0,0,0,0.5),
-                inset 0 12px 26px rgba(255,255,255,0.2);
+                inset 0 12px 26px rgba(255,255,255,0.2),
+                0 0 0 1px #0d0d0c,
+                5px 9px 18px rgba(0,0,0,0.6);
         }
 
         .vault-face::before {
@@ -418,8 +419,7 @@
             height: 56%;
             background:
                 conic-gradient(from 30deg, rgba(255,255,255,0.3), rgba(0,0,0,0.25) 60deg, rgba(255,255,255,0.22) 130deg, rgba(0,0,0,0.3) 200deg, rgba(255,255,255,0.25) 280deg, rgba(255,255,255,0.3)),
-                repeating-conic-gradient(rgba(255,255,255,0.05) 0 0.5deg, rgba(0,0,0,0.07) 0.5deg 1.1deg),
-                radial-gradient(circle at 40% 35%, #a9aaa5, #6c6d68);
+                var(--tex, radial-gradient(circle at 40% 35%, #a9aaa5, #6c6d68)) center / cover;
             box-shadow:
                 inset 0 2px 1px rgba(255,255,255,0.45),
                 inset 0 -3px 6px rgba(0,0,0,0.55),
@@ -460,7 +460,7 @@
             background: var(--chrome-x);
             box-shadow: 0 3px 5px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.5);
             transform: rotate(var(--a)) translateY(calc(var(--d) * -0.49));
-            animation: vault-bolt-retract 0.55s cubic-bezier(.6, 0, .9, .6) calc(2.95s + var(--i) * 0.025s) forwards;
+            animation: vault-bolt-retract 0.55s cubic-bezier(.6, 0, .9, .6) calc(4.55s + var(--i) * 0.025s) forwards;
         }
 
         .vault-hinge {
@@ -505,7 +505,7 @@
         .vault-wheel {
             position: absolute;
             inset: 0;
-            animation: vault-wheel-spin 1.1s cubic-bezier(.45, 0, .3, 1) 1.9s forwards;
+            animation: vault-wheel-spin 1.9s cubic-bezier(.45, 0, .3, 1) 2.7s forwards;
         }
 
         .vault-spoke {
@@ -565,7 +565,7 @@
                 0 0 0 9px #5b4a37,
                 0 0 0 11px #a9aaa5,
                 0 8px 16px rgba(0,0,0,0.6);
-            animation: vault-dial-spin 1.5s ease-in-out 0.4s forwards;
+            animation: vault-dial-spin 2.6s ease-in-out 0.4s forwards;
         }
 
         /* Glass sheen and inner shadow over the face */
@@ -580,6 +580,45 @@
             box-shadow: inset 0 0 14px 3px rgba(0,0,0,0.55);
         }
 
+        /* Volumetric light rays spilling out as the door opens */
+        .vault-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: calc(var(--d) * 2.8);
+            height: calc(var(--d) * 2.8);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: none;
+            background:
+                repeating-conic-gradient(from 3deg, transparent 0 5deg, rgba(255, 228, 180, 0.32) 6deg, transparent 8deg 13deg),
+                repeating-conic-gradient(from 0deg, transparent 0 9deg, rgba(255, 236, 200, 0.22) 10deg, transparent 12deg 17deg),
+                radial-gradient(circle, rgba(255, 230, 190, 0.5), transparent 45%);
+            -webkit-mask: radial-gradient(circle, #000 14%, transparent 68%);
+                    mask: radial-gradient(circle, #000 14%, transparent 68%);
+            filter: blur(5px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            animation: vault-rays 3.2s ease-in-out 5.5s forwards;
+        }
+
+        @keyframes vault-rays {
+            0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.8); }
+            35%  { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(14deg) scale(1.6); }
+        }
+
+        /* Fine film grain over the whole scene */
+        #vault::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: var(--noise);
+            mix-blend-mode: overlay;
+            opacity: 0.12;
+        }
+
         @keyframes vault-dolly {
             from { transform: scale(1.08); filter: brightness(0.4); }
             to   { transform: scale(1); filter: brightness(1); }
@@ -587,13 +626,14 @@
 
         @keyframes vault-dial-spin {
             0%   { transform: rotate(0deg); }
-            35%  { transform: rotate(320deg); }
-            65%  { transform: rotate(140deg); }
-            100% { transform: rotate(360deg); }
+            24%  { transform: rotate(400deg); }
+            46%  { transform: rotate(150deg); }
+            72%  { transform: rotate(560deg); }
+            100% { transform: rotate(720deg); }
         }
 
         @keyframes vault-wheel-spin {
-            to { transform: rotate(270deg); }
+            to { transform: rotate(630deg); }
         }
 
         @keyframes vault-bolt-retract {
@@ -726,6 +766,7 @@
                 </div>
             </div>
         </div>
+        <div class="vault-rays"></div>
     </div>
 
     <div class="content-wrapper">
@@ -802,12 +843,51 @@
             var frameRivets = vault.querySelector('.vault-frame-rivets');
             for (i = 0; i < 20; i++) add(frameRivets, 'vault-rivet', { '--a': (i * 18 + 9) + 'deg', '--r': 'calc(var(--d) / -2 - 36px)', '--s': '11px' });
 
+            // Procedural brushed steel: concentric brush strokes, scratches and grime
+            try {
+                var size = 1024, c = document.createElement('canvas');
+                c.width = c.height = size;
+                var g = c.getContext('2d'), h = size / 2, R = Math.random;
+                var base = g.createRadialGradient(h * 0.75, h * 0.6, 0, h, h, h * 1.05);
+                base.addColorStop(0, '#b4b5b0');
+                base.addColorStop(0.55, '#7e7f7a');
+                base.addColorStop(1, '#454642');
+                g.fillStyle = base;
+                g.fillRect(0, 0, size, size);
+                for (i = 0; i < 7000; i++) {
+                    var r = Math.sqrt(R()) * h * 1.02, a0 = R() * Math.PI * 2;
+                    g.strokeStyle = R() < 0.5 ? 'rgba(255,255,255,' + R() * 0.07 + ')' : 'rgba(0,0,0,' + R() * 0.08 + ')';
+                    g.lineWidth = 0.4 + R() * 1.2;
+                    g.beginPath();
+                    g.arc(h, h, r, a0, a0 + 0.05 + R() * 0.9);
+                    g.stroke();
+                }
+                for (i = 0; i < 160; i++) {
+                    var x = R() * size, y = R() * size, ang = R() * Math.PI, len = 4 + R() * 50;
+                    var dx = Math.cos(ang) * len, dy = Math.sin(ang) * len;
+                    g.lineWidth = 0.6;
+                    g.strokeStyle = 'rgba(255,255,255,' + (0.05 + R() * 0.1) + ')';
+                    g.beginPath(); g.moveTo(x, y); g.lineTo(x + dx, y + dy); g.stroke();
+                    g.strokeStyle = 'rgba(0,0,0,' + (0.05 + R() * 0.1) + ')';
+                    g.beginPath(); g.moveTo(x + 0.8, y + 0.8); g.lineTo(x + dx + 0.8, y + dy + 0.8); g.stroke();
+                }
+                for (i = 0; i < 18; i++) {
+                    var gx = R() * size, gy = R() * size, gr = 30 + R() * 180;
+                    var blot = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
+                    blot.addColorStop(0, 'rgba(50,40,28,' + (0.04 + R() * 0.07) + ')');
+                    blot.addColorStop(1, 'rgba(50,40,28,0)');
+                    g.fillStyle = blot;
+                    g.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
+                }
+                vault.style.setProperty('--tex', 'url(' + c.toDataURL('image/jpeg', 0.88) + ')');
+            } catch (e) {}
+
             var door = vault.querySelector('.vault-door');
             for (i = 1; i <= 14; i++) add(door, 'vault-layer', { '--z': (i * 2) + 'px' });
             door.appendChild(vault.querySelector('.vault-face'));
 
-            var revealTimer = setTimeout(reveal, 4900);
-            var doneTimer = setTimeout(finish, 6800);
+            var revealTimer = setTimeout(reveal, 6500);
+            var doneTimer = setTimeout(finish, 8400);
 
             function reveal() { document.body.classList.remove('vault-active'); }
             function finish() { vault.remove(); }
