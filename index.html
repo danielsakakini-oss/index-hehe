@@ -226,7 +226,6 @@
             overflow: hidden;
             cursor: pointer;
             background: transparent;
-            animation: vault-dolly 2.2s cubic-bezier(.2, .6, .2, 1) both;
         }
 
         /* Dark backdrop with everything paused until assets are ready */
@@ -394,16 +393,6 @@
                 5px 9px 18px rgba(0,0,0,0.6);
         }
 
-        .vault-face::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: var(--noise);
-            mix-blend-mode: overlay;
-            opacity: 0.55;
-        }
-
         .vault-face-rivets {
             position: absolute;
             top: 50%;
@@ -461,7 +450,6 @@
         }
 
         .vault-engraving .top { top: 14.5%; }
-        .vault-engraving .bottom { bottom: 14.5%; }
 
         .vault-bolt {
             position: absolute;
@@ -505,7 +493,6 @@
         .vault-hinge.h1 { top: 20%; }
         .vault-hinge.h2 { bottom: 20%; }
 
-        /* Static wrapper so the wheel's shadow doesn't rotate with it */
         .vault-wheel-shadow {
             position: absolute;
             top: 50%;
@@ -513,7 +500,6 @@
             width: 48%;
             height: 48%;
             margin: -24% 0 0 -24%;
-            filter: drop-shadow(6px 12px 7px rgba(0,0,0,0.55));
         }
 
         .vault-wheel {
@@ -531,6 +517,7 @@
             margin-top: -3.75%;
             border-radius: 99px;
             background: var(--chrome-y);
+            box-shadow: 0 0 7px 1px rgba(0,0,0,0.5);
         }
 
         .vault-spoke::before,
@@ -543,6 +530,7 @@
             transform: translateY(-50%);
             border-radius: 50%;
             background: radial-gradient(circle at 35% 30%, #ffffff 0, #e4e5e0 12%, #9a9b96 45%, #4a4b47 80%, #2a2b29);
+            box-shadow: 0 0 7px 1px rgba(0,0,0,0.5);
         }
 
         .vault-spoke::before { left: -6%; }
@@ -629,13 +617,34 @@
             inset: 0;
             pointer-events: none;
             background: var(--noise);
-            mix-blend-mode: overlay;
-            opacity: 0.12;
+            opacity: 0.05;
         }
 
-        @keyframes vault-dolly {
-            from { transform: scale(1.08); filter: brightness(0.4); }
-            to   { transform: scale(1); filter: brightness(1); }
+        /* Fade up from the dark loading backdrop (opacity only: cheap and flicker-free) */
+        .vault-fade {
+            position: absolute;
+            inset: 0;
+            background: #1c1a17;
+            pointer-events: none;
+            will-change: opacity;
+            animation: vault-fade-in 1.4s ease-out forwards;
+        }
+
+        @keyframes vault-fade-in {
+            to { opacity: 0; }
+        }
+
+        .vault-scene,
+        .vault-door,
+        .vault-wheel,
+        .vault-dial,
+        .vault-bolt {
+            will-change: transform;
+        }
+
+        .vault-glow,
+        .vault-rays {
+            will-change: opacity, transform;
         }
 
         @keyframes vault-dial-spin {
@@ -847,7 +856,7 @@
                         <div class="vault-ring r1"></div>
                         <div class="vault-face-rivets"></div>
                         <div class="vault-ring r2"></div>
-                        <div class="vault-engraving"><span class="top">Sakakini</span><span class="bottom">MMXXIV</span></div>
+                        <div class="vault-engraving"><span class="top">Sakakini</span></div>
                         <div class="vault-wheel-shadow">
                             <div class="vault-wheel">
                                 <div class="vault-spoke"></div>
@@ -862,6 +871,7 @@
             </div>
         </div>
         <div class="vault-rays"></div>
+        <div class="vault-fade"></div>
     </div>
     <script>
         (function () {
@@ -896,7 +906,10 @@
             for (i = 0; i < 20; i++) add(frameRivets, 'vault-rivet', { '--a': (i * 18 + 9) + 'deg', '--r': 'calc(var(--d) / -2 - 36px)', '--s': '11px' });
 
             // Procedural brushed steel: concentric brush strokes, scratches and grime
+            // Built as a blob URL (not a giant data: URL in a CSS variable), which Safari
+            // otherwise re-resolves during animation and briefly flashes.
             var texImg = new Image();
+            var texReady = new Promise(function (resolve) {
             try {
                 var dpr = window.devicePixelRatio || 1;
                 var dPx = Math.min(Math.min(innerWidth, innerHeight) * 0.7, 460);
@@ -935,9 +948,25 @@
                     g.fillStyle = blot;
                     g.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
                 }
-                texImg.src = c.toDataURL('image/jpeg', 0.88);
-                vault.style.setProperty('--tex', 'url(' + texImg.src + ')');
-            } catch (e) {}
+                // Fine grain baked into the pixels
+                var px = g.getImageData(0, 0, size, size), d = px.data;
+                for (i = 0; i < d.length; i += 4) {
+                    var gr2 = (R() - 0.5) * 22;
+                    d[i] += gr2; d[i + 1] += gr2; d[i + 2] += gr2;
+                }
+                g.putImageData(px, 0, 0);
+                c.toBlob(function (blob) {
+                    if (!blob) return resolve();
+                    texImg.src = URL.createObjectURL(blob);
+                    decoded(texImg).then(function () {
+                        vault.querySelectorAll('.vault-face, .vault-ring.r2, .vault-frame').forEach(function (el) {
+                            el.style.setProperty('--tex', 'url(' + texImg.src + ')');
+                        });
+                        resolve();
+                    });
+                }, 'image/jpeg', 0.88);
+            } catch (e) { resolve(); }
+            });
 
             var door = vault.querySelector('.vault-door');
             for (i = 1; i <= 14; i++) add(door, 'vault-layer', { '--z': (i * 2) + 'px' });
@@ -951,7 +980,7 @@
             }
             var faceImg = new Image();
             faceImg.src = 'vault-face.jpg';
-            var assets = [decoded(texImg), decoded(faceImg)];
+            var assets = [texReady, decoded(faceImg)];
             if (document.fonts && document.fonts.load) assets.push(document.fonts.load('600 12px Cinzel').catch(function () {}));
             var timeout = new Promise(function (r) { setTimeout(r, 1500); });
 
