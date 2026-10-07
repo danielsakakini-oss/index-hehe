@@ -32,35 +32,33 @@
         .card {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             width: 100%;
             background: #f5ede3;
-            padding: 3.5rem max(4rem, calc(50% - 286px));
+            padding: 4.5rem max(4rem, calc(50% - 286px));
             position: relative;
         }
 
-        /* Decorative corner accents on card */
-        .card::before,
-        .card::after {
+        /* Decorative corner accents in all four corners */
+        .card::before {
+            --c: rgba(139, 107, 72, 0.3);
+            --len: 24px;
+            --w: 3px;
             content: '';
             position: absolute;
-            width: 24px;
-            height: 24px;
-            border-color: rgba(139, 107, 72, 0.3);
-            border-style: solid;
-        }
-
-        .card::before {
-            top: 20px;
-            left: 20px;
-            border-width: 1px 0 0 1px;
-        }
-
-        .card::after {
-            bottom: 20px;
-            right: 20px;
-            border-width: 0 1px 1px 0;
+            inset: 20px;
+            pointer-events: none;
+            background:
+                linear-gradient(var(--c), var(--c)) top left / var(--len) var(--w),
+                linear-gradient(var(--c), var(--c)) top left / var(--w) var(--len),
+                linear-gradient(var(--c), var(--c)) top right / var(--len) var(--w),
+                linear-gradient(var(--c), var(--c)) top right / var(--w) var(--len),
+                linear-gradient(var(--c), var(--c)) bottom left / var(--len) var(--w),
+                linear-gradient(var(--c), var(--c)) bottom left / var(--w) var(--len),
+                linear-gradient(var(--c), var(--c)) bottom right / var(--len) var(--w),
+                linear-gradient(var(--c), var(--c)) bottom right / var(--w) var(--len);
+            background-repeat: no-repeat;
         }
 
         .name {
@@ -658,7 +656,7 @@
 
         @media (max-width: 768px) {
             .card {
-                padding: 2.5rem 2rem;
+                padding: 4.5rem 2rem 3rem;
             }
 
             .name {
@@ -696,7 +694,7 @@
 
         @media (max-width: 400px) {
             .card {
-                padding: 2rem 1.5rem;
+                padding: 4.5rem 1.5rem 3rem;
             }
 
             .name {
