@@ -1531,8 +1531,14 @@
                     return Math.max(ctx.currentTime + 0.004, t);
                 }
 
+                function outputClockReady() {
+                    if (!ctx.getOutputTimestamp) return true;
+                    var ts = ctx.getOutputTimestamp();
+                    return !!ts && ts.performanceTime > 0 && ts.contextTime > 0;
+                }
+
                 // Look-ahead scheduler: every 30 ms, hand the audio clock only the cues due in the
-                // next quarter second. Timing is re-synced continuously, so a slow-starting audio
+                // next 0.3 seconds. Timing is re-synced continuously, so a slow-starting audio
                 // device or a busy moment can no longer push the whole soundtrack late.
                 var ticker = null;
                 function tick() {
@@ -1543,7 +1549,10 @@
                         left++;
                         var wait = c[0] - now;
                         if (wait < -0.12) { c.done = true; return; }   // missed (sound was still locked): skip it
-                        if (wait > 0.25) return;
+                        if (wait > 0.3) return;
+                        // audio device still starting up (no output timestamp yet): hold cues back
+                        // until the last moment rather than commit them to an unsettled clock
+                        if (wait > 0.08 && !outputClockReady()) return;
                         c.done = true;
                         c[1](heardIn(Math.max(0, wait)), c[2], c[3]);
                     });
