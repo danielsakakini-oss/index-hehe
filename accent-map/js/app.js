@@ -192,6 +192,7 @@
   //  Pan (mouse) — Pointer Events, mouse only
   // ============================================================
   let drag    = null;
+  let lastPinTap = null;
   let pinDrag = null; // { pin, el, offsetX, offsetY, moved }
 
   mapWrap.addEventListener('pointerdown', e => {
@@ -239,6 +240,18 @@
         pins = pins.map(p => p.id === updated.id ? updated : p);
         updatePinAPI(updated).catch(err => console.error('pin save failed', err));
         renderPins();
+      }
+      else {
+        // Pointer capture redirects click/dblclick to the map, so detect
+        // double-click (or modifier-click) on a pin here instead.
+        const now = performance.now();
+        const again = lastPinTap && lastPinTap.id === pinDrag.pin.id && now - lastPinTap.t < 400;
+        lastPinTap = { id: pinDrag.pin.id, t: now };
+        if (again || e.altKey || e.ctrlKey || e.metaKey) {
+          lastPinTap = null;
+          const target = pins.find(p => p.id === pinDrag.pin.id);
+          if (target) openEditor(target);
+        }
       }
       pinDrag = null;
       document.body.classList.remove('pin-dragging');
@@ -573,10 +586,6 @@
           pinDrag = { pin: { ...pin }, el: g, offsetX: svgPos.x - pin.x, offsetY: svgPos.y - pin.y, moved: false };
           mapWrap.setPointerCapture(e.pointerId);
           document.body.classList.add('pin-dragging');
-        });
-        g.addEventListener('dblclick', e => { e.preventDefault(); openEditor(pin); });
-        g.addEventListener('click', e => {
-          if (e.altKey || e.ctrlKey || e.metaKey) { e.preventDefault(); openEditor(pin); }
         });
       }
     });
