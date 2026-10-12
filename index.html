@@ -1507,14 +1507,51 @@
                     cues.push([7.15, settle]);
                 })();
 
-                function schedule() {
+                // Where the visuals are right now, in seconds. Read from the running CSS animation
+                // itself (the scene's zoom-out spans the whole intro), so sound follows the picture
+                // even if the page hitches; falls back to the wall clock.
+                var clockAnim = null;
+                function elapsed() {
+                    if (!clockAnim) {
+                        var scene = vault.querySelector('.vault-scene');
+                        (scene && scene.getAnimations ? scene.getAnimations() : []).forEach(function (a) {
+                            if (a.animationName === 'vault-out') clockAnim = a;
+                        });
+                    }
+                    if (clockAnim && typeof clockAnim.currentTime === 'number') return clockAnim.currentTime / 1000;
+                    return (performance.now() - t0) / 1000;
+                }
+                // Audio-clock time at which a sound must start to be HEARD `secs` from now,
+                // allowing for the output delay of the device (large on Bluetooth).
+                function heardIn(secs) {
+                    var at = performance.now() + secs * 1000, t;
+                    var ts = ctx.getOutputTimestamp ? ctx.getOutputTimestamp() : null;
+                    if (ts && ts.performanceTime > 0 && ts.contextTime > 0) t = ts.contextTime + (at - ts.performanceTime) / 1000;
+                    else t = ctx.currentTime + secs - (ctx.outputLatency || ctx.baseLatency || 0);
+                    return Math.max(ctx.currentTime + 0.004, t);
+                }
+
+                // Look-ahead scheduler: every 30 ms, hand the audio clock only the cues due in the
+                // next quarter second. Timing is re-synced continuously, so a slow-starting audio
+                // device or a busy moment can no longer push the whole soundtrack late.
+                var ticker = null;
+                function tick() {
                     if (!ctx || t0 === null || muted || ctx.state !== 'running') return;
-                    var now = ctx.currentTime, elapsed = (performance.now() - t0) / 1000;
+                    var now = elapsed(), left = 0;
                     cues.forEach(function (c) {
-                        if (c.done || c[0] < elapsed) return;
+                        if (c.done) return;
+                        left++;
+                        var wait = c[0] - now;
+                        if (wait < -0.12) { c.done = true; return; }   // missed (sound was still locked): skip it
+                        if (wait > 0.25) return;
                         c.done = true;
-                        c[1](now + (c[0] - elapsed), c[2], c[3]);
+                        c[1](heardIn(Math.max(0, wait)), c[2], c[3]);
                     });
+                    if (!left) { clearInterval(ticker); ticker = null; }
+                }
+                function schedule() {
+                    tick();
+                    if (!ticker) ticker = setInterval(tick, 30);
                 }
 
                 function update() {
@@ -1569,6 +1606,8 @@
                         update();
                     },
                     stop: function () {
+                        clearInterval(ticker);
+                        cues.forEach(function (c) { c.done = true; });
                         if (ctx) master.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
                     },
                     tapWasForSound: tapWasForSound
