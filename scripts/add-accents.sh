@@ -101,7 +101,7 @@ while IFS= read -r m4a_file <&3; do
 
   # Upload to R2
   info "Uploading to R2: ${BUCKET}/${mp3_key}"
-  if ! npx wrangler r2 object put "${BUCKET}/${mp3_key}" \
+  if ! npx --yes wrangler@4.145.0 r2 object put "${BUCKET}/${mp3_key}" \
       --file "$mp3_path" \
       --content-type "audio/mpeg" \
       --remote 2>/tmp/wrangler_err.txt; then
