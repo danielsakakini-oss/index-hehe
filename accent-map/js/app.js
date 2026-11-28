@@ -266,7 +266,10 @@
         // double-click (or modifier-click) on a pin here instead.
         const now = performance.now();
         const again = lastPinTap && lastPinTap.id === pinDrag.pin.id && now - lastPinTap.t < 400;
-        if (!again && !(e.altKey || e.ctrlKey || e.metaKey)) panToPin(pinDrag.pin, pinDrag.off);
+        if (!again && !(e.altKey || e.ctrlKey || e.metaKey)) {
+          selectPin(pinDrag.pin);
+          panToPin(pinDrag.pin, pinDrag.off);
+        }
         lastPinTap = { id: pinDrag.pin.id, t: now };
         if (again || e.altKey || e.ctrlKey || e.metaKey) {
           lastPinTap = null;
@@ -334,8 +337,6 @@
           return; // don't start a pan
         }
       }
-      // Tapped blank map — stop audio
-      stopAll();
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
     } else if (e.touches.length === 2) {
@@ -396,9 +397,11 @@
     if (e.touches.length === 0) {
       // Fire pin if this was a clean tap
       if (touchTap) {
-        onPinEnter(touchTap.pin, touchTap.el || pinsLayer);
+        selectPin(touchTap.pin);
         panToPin(touchTap.pin, Number(touchTap.el?.dataset.off || 0));
         touchTap = null;
+      } else if (drag && !drag.moved && !document.body.classList.contains('add-mode')) {
+        clearSelection(); // clean tap on blank map
       }
       const wasMoved = drag?.moved;
       drag = null; pinch = null;
@@ -456,23 +459,34 @@
     tooltip.classList.remove('show', 'faded');
   }
 
-  document.addEventListener('mousemove', e => {
-    if (tooltip.classList.contains('show')) {
-      tooltip.style.left = e.clientX + 'px';
-      tooltip.style.top  = e.clientY + 'px';
+  // Keep the tooltip above whichever on-screen copy of the selected pin is
+  // nearest the middle of the screen (follows pans, zooms and wrapping).
+  function positionTooltip() {
+    if (!activePin || !tooltip.classList.contains('show')) return;
+    const cx = innerWidth / 2;
+    let best = null, bestD = Infinity;
+    pinsLayer.querySelectorAll(`.pin-group[data-id="${CSS.escape(activePin.id)}"] .pin-head`).forEach(h => {
+      const r = h.getBoundingClientRect();
+      const d = Math.abs(r.left + r.width / 2 - cx);
+      if (d < bestD) { bestD = d; best = r; }
+    });
+    if (best) {
+      tooltip.style.left = (best.left + best.width / 2) + 'px';
+      tooltip.style.top  = (best.top - 4) + 'px';
     }
-  });
+    requestAnimationFrame(positionTooltip);
+  }
 
   // ============================================================
   //  Audio crossfade engine
   // ============================================================
   const players = new Map();
   let blockedClip = null;     // clip that autoplay policy refused
-  let hoveredId   = null;     // pin currently under the pointer
+  let activePin   = null;     // pin selected by the last click/tap
 
   ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
     window.addEventListener(ev, () => {
-      if (blockedClip && blockedClip.id === hoveredId) playClip(blockedClip.id, blockedClip.url);
+      if (blockedClip && activePin && blockedClip.id === 'pin:' + activePin.id) playClip(blockedClip.id, blockedClip.url);
       blockedClip = null;
     }, { capture: true, passive: true }));
 
@@ -507,14 +521,14 @@
     audio.loop        = false;
     const p = { id, audio, current: 0, target: 1, raf: 0 };
     players.set(id, p);
-    // When audio finishes naturally, remove from players so hovering
+    // When audio finishes naturally, remove from players so clicking
     // again creates a fresh instance and replays from the start.
     audio.addEventListener('ended', () => players.delete(id));
     audio.play().catch(err => {
       console.warn('audio play failed', id, err);
       players.delete(id);
       // Browsers block audio until the first click/tap/key. Remember the clip
-      // so the first gesture starts it if the pointer is still on the pin.
+      // so the next gesture starts it if that pin is still selected.
       if (err && err.name === 'NotAllowedError') {
         blockedClip = { id, url };
         ttState.classList.add('dim');
@@ -600,10 +614,9 @@
 
       pinsLayer.appendChild(g);
 
-      g.addEventListener('mouseenter', () => onPinEnter(realPin, g));
-      g.addEventListener('mouseleave', () => onPinLeave(realPin, g));
       g.addEventListener('click', () => {
         if (document.body.classList.contains('add-mode')) return;
+        selectPin(realPin);
         panToPin(realPin, off);
       });
 
@@ -623,6 +636,7 @@
     updateEmpty();
     updateCounter();
     renderAccentList();
+    markActive();
   }
 
   function updateEmpty() {
@@ -645,28 +659,50 @@
   }
 
   // ============================================================
-  //  Hover handlers
+  //  Selection: clicking a pin plays its clip until another pin
+  //  or a blank part of the map is clicked
   // ============================================================
-  function onPinEnter(pin, el) {
+  function markActive() {
+    pinsLayer.querySelectorAll('.pin-group.is-active').forEach(g => g.classList.remove('is-active'));
+    document.querySelectorAll('.accents-list-item.playing').forEach(i => i.classList.remove('playing'));
+    if (!activePin) return;
+    const sel = `[data-id="${CSS.escape(activePin.id)}"]`;
+    pinsLayer.querySelectorAll('.pin-group' + sel).forEach(g => g.classList.add('is-active'));
+    document.querySelectorAll('.accents-list-item' + sel).forEach(i => i.classList.add('playing'));
+  }
+
+  function selectPin(pin) {
     if (document.body.classList.contains('add-mode')) return;
-    document.body.classList.add('has-hover');
-    el.classList.add('is-active');
-    showTooltip(pin.country, pin.accent, !!pin.audio);
+    const id = 'pin:' + pin.id;
     // iOS only plays one audio element at a time — stop immediately on mobile
     // so the new clip isn't cancelled by a concurrent fadeout
     if (isMobile) stopAll();
-    else fadeOutAll();
-    hoveredId = 'pin:' + pin.id;
-    if (pin.audio) playClip('pin:' + pin.id, pin.audio);
+    else { stopImmediate(id); fadeOutAll(); }
+    activePin = pin;
+    document.body.classList.add('has-hover');
+    markActive();
+    showTooltip(pin.country, pin.accent, !!pin.audio);
+    requestAnimationFrame(positionTooltip);
+    if (pin.audio) playClip(id, pin.audio);
   }
 
-  function onPinLeave(pin, el) {
-    if (hoveredId === 'pin:' + pin.id) hoveredId = null;
-    el.classList.remove('is-active');
+  function clearSelection() {
+    if (!activePin) return;
+    activePin = null;
     document.body.classList.remove('has-hover');
+    markActive();
     hideTooltip();
-    stopImmediate('pin:' + pin.id);
+    if (isMobile) stopAll();
+    else fadeOutAll();
   }
+
+  // Clicking blank map (not after a drag, which swallows the click) stops playback
+  mapWrap.addEventListener('click', e => {
+    if (document.body.classList.contains('add-mode')) return;
+    if (e.target.closest('.zoom-ctrl') || e.target.closest('.pin-group')) return;
+    if (pinAtClientPoint(e.clientX, e.clientY)) return; // admin pin clicks land here via pointer capture
+    clearSelection();
+  });
 
   // ============================================================
   //  Add mode (admin only)
@@ -678,8 +714,7 @@
     const on = typeof force === 'boolean' ? force : !document.body.classList.contains('add-mode');
     document.body.classList.toggle('add-mode', on);
     btnAdd.classList.toggle('active', on);
-    fadeOutAll();
-    hideTooltip();
+    clearSelection();
   }
 
   btnAdd.addEventListener('click', () => toggleAddMode());
@@ -1046,11 +1081,8 @@
         `</div>`;
 
       item.addEventListener('click', () => {
-        stopAll();
-        if (pin.audio) playClip('pin:' + pin.id, pin.audio);
+        selectPin(pin);
         centerOnPin(pin);
-        document.querySelectorAll('.accents-list-item').forEach(i => i.classList.remove('playing'));
-        item.classList.add('playing');
       });
 
       if (isAdmin()) {
