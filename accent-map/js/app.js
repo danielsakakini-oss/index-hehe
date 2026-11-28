@@ -914,23 +914,26 @@
   $('#adminLogin').addEventListener('click', doLogin);
   adminPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-  // Access: ?admin in URL, or Ctrl+Shift+A
+  // Access: ?admin in URL, or Ctrl+Shift+A (pressing it again logs out)
   if (new URLSearchParams(window.location.search).has('admin') && !adminToken) {
     setTimeout(openAdminModal, 300);
   }
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
       e.preventDefault();
-      if (!isAdmin()) openAdminModal();
+      if (isAdmin()) logout();
+      else openAdminModal();
     }
   });
 
   // Logout
-  $('#btnLogout').addEventListener('click', () => {
+  function logout() {
+    toggleAddMode(false);   // leave add-pin mode so the cursor resets
     clearAdminMode();
     renderPins();
     updateEmpty();
-  });
+  }
+  $('#btnLogout').addEventListener('click', logout);
 
   // ============================================================
   //  Global ESC
