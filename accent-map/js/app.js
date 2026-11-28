@@ -108,6 +108,26 @@
   mapZoom.style.width  = MAP_W + 'px';
   mapZoom.style.height = MAP_H + 'px';
 
+  // Horizontal wraparound: a copy of the map sits on each side of the real
+  // one, and applyTransform() keeps the view centre inside the middle copy,
+  // so panning left or right never hits an edge.
+  const TILE_OFFSETS = [-MAP_W, 0, MAP_W];
+  function wrapX(x) { return ((x % MAP_W) + MAP_W) % MAP_W; }
+  {
+    const baseImg = mapZoom.querySelector('.map-img');
+    [-1, 1].forEach(dir => {
+      const copy = baseImg.cloneNode();
+      copy.alt = '';
+      copy.setAttribute('aria-hidden', 'true');
+      copy.style.left = (dir * 100) + '%';
+      baseImg.parentNode.insertBefore(copy, dir < 0 ? baseImg : baseImg.nextSibling);
+    });
+    const svg = mapZoom.querySelector('.map-svg');
+    svg.setAttribute('viewBox', `${-MAP_W} 0 ${MAP_W * 3} ${MAP_H}`);
+    svg.style.left  = '-100%';
+    svg.style.width = '300%';
+  }
+
   const ZOOM = { min: 1, max: 7, level: 1, tx: 0, ty: 0 };
 
   function fitScale() {
@@ -119,12 +139,12 @@
     const s  = f * ZOOM.level;
     const vw = mapWrap.clientWidth, vh = mapWrap.clientHeight;
     const sw = MAP_W * s, sh = MAP_H * s;
-    if (sw <= vw) ZOOM.tx = (vw - sw) / 2;
-    else ZOOM.tx = Math.max(vw - sw, Math.min(0, ZOOM.tx));
+    // Shift by whole map widths so the view centre stays on the middle copy
+    ZOOM.tx += Math.floor((vw / 2 - ZOOM.tx) / sw) * sw;
     if (sh <= vh) ZOOM.ty = (vh - sh) / 2;
     else ZOOM.ty = Math.max(vh - sh, Math.min(0, ZOOM.ty));
     mapZoom.style.transform = `translate(${ZOOM.tx}px, ${ZOOM.ty}px) scale(${s})`;
-    document.body.classList.toggle('can-pan', ZOOM.level > 1.001);
+    document.body.classList.add('can-pan');
     const pct  = $('#zoomPct');
     if (pct) pct.textContent = Math.round(ZOOM.level * 100) + '%';
     const zin  = $('#zoomIn'), zout = $('#zoomOut');
@@ -148,7 +168,8 @@
   function updatePinScales() {
     const inv = 1 / ZOOM.level;
     pinsLayer.querySelectorAll('.pin-group').forEach(g => {
-      const pin  = pins.find(p => p.id === g.dataset.id);
+      const pin0 = pins.find(p => p.id === g.dataset.id);
+      const pin  = pin0 && { ...pin0, x: pin0.x + Number(g.dataset.off || 0) };
       const pos  = g.querySelector('.pin-pos');
       const halo = g.querySelector('.pin-halo');
       const zone = g.querySelector('.pin-zone');
@@ -200,7 +221,6 @@
     if (e.button !== 0) return;
     if (e.target.closest('.zoom-ctrl') || e.target.closest('.pin-group')) return;
     if (document.body.classList.contains('add-mode')) return;
-    if (ZOOM.level <= ZOOM.min + 0.001) return;
     mapWrap.setPointerCapture(e.pointerId);
     drag = { x0: e.clientX, y0: e.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
     document.body.classList.add('panning');
@@ -209,7 +229,7 @@
   mapWrap.addEventListener('pointermove', e => {
     if (e.pointerType !== 'mouse') return;
     if (pinDrag) {
-      const { x, y } = clientToSvg(e.clientX, e.clientY);
+      const { x, y } = clientToSvgRaw(e.clientX, e.clientY);
       const nx = x - pinDrag.offsetX, ny = y - pinDrag.offsetY;
       pinDrag.moved = true;
       pinDrag.el.querySelectorAll('[cx]').forEach(el => el.setAttribute('cx', String(nx)));
@@ -233,8 +253,8 @@
     try { mapWrap.releasePointerCapture(e.pointerId); } catch {}
     if (pinDrag) {
       if (pinDrag.moved) {
-        const { x, y } = clientToSvg(e.clientX, e.clientY);
-        const nx = Math.round(x - pinDrag.offsetX);
+        const { x, y } = clientToSvgRaw(e.clientX, e.clientY);
+        const nx = Math.round(wrapX(x - pinDrag.offsetX - pinDrag.off));
         const ny = Math.round(y - pinDrag.offsetY);
         const updated = { ...pinDrag.pin, x: nx, y: ny };
         pins = pins.map(p => p.id === updated.id ? updated : p);
@@ -292,7 +312,8 @@
     const minR = isMobile ? 22 / s : 0; // minimum hit radius in SVG units
     for (const pin of pins) {
       const r = Math.max(pin.radius || T.defaultRadius, minR);
-      if (Math.hypot(svgX - pin.x, svgY - pin.y) <= r) return pin;
+      const dx = ((svgX - pin.x) % MAP_W + MAP_W * 1.5) % MAP_W - MAP_W / 2;
+      if (Math.hypot(dx, svgY - pin.y) <= r) return pin;
     }
     return null;
   }
@@ -305,14 +326,15 @@
       if (!document.body.classList.contains('add-mode')) {
         const hit = pinAtClientPoint(t.clientX, t.clientY);
         if (hit) {
-          const el = pinsLayer.querySelector(`[data-id="${hit.id}"]`);
+          const raw = clientToSvgRaw(t.clientX, t.clientY);
+          const off = Math.round((raw.x - hit.x) / MAP_W) * MAP_W;
+          const el = pinsLayer.querySelector(`[data-id="${CSS.escape(hit.id)}"][data-off="${off}"]`);
           touchTap = { pin: hit, el, x: t.clientX, y: t.clientY };
           return; // don't start a pan
         }
       }
       // Tapped blank map — stop audio
       stopAll();
-      if (ZOOM.level <= ZOOM.min + 0.001) return;
       drag = { x0: t.clientX, y0: t.clientY, tx0: ZOOM.tx, ty0: ZOOM.ty, moved: false };
       document.body.classList.add('panning');
     } else if (e.touches.length === 2) {
@@ -527,10 +549,12 @@
 
   function renderPins() {
     pinsLayer.innerHTML = '';
-    pins.forEach(pin => {
+    TILE_OFFSETS.forEach(off => pins.forEach(realPin => {
+      const pin = { ...realPin, x: realPin.x + off };
       const g = document.createElementNS(SVG_NS, 'g');
       g.setAttribute('class', 'pin-group');
       g.dataset.id = pin.id;
+      g.dataset.off = String(off);
 
       const zone = document.createElementNS(SVG_NS, 'circle');
       zone.setAttribute('class', 'pin-zone');
@@ -574,21 +598,21 @@
 
       pinsLayer.appendChild(g);
 
-      g.addEventListener('mouseenter', () => onPinEnter(pin, g));
-      g.addEventListener('mouseleave', () => onPinLeave(pin, g));
+      g.addEventListener('mouseenter', () => onPinEnter(realPin, g));
+      g.addEventListener('mouseleave', () => onPinLeave(realPin, g));
 
       if (isAdmin()) {
         g.addEventListener('pointerdown', e => {
           if (e.button !== 0 || e.pointerType !== 'mouse') return;
           if (document.body.classList.contains('add-mode')) return;
           e.stopPropagation();
-          const svgPos = clientToSvg(e.clientX, e.clientY);
-          pinDrag = { pin: { ...pin }, el: g, offsetX: svgPos.x - pin.x, offsetY: svgPos.y - pin.y, moved: false };
+          const svgPos = clientToSvgRaw(e.clientX, e.clientY);
+          pinDrag = { pin: { ...realPin }, el: g, off, offsetX: svgPos.x - pin.x, offsetY: svgPos.y - pin.y, moved: false };
           mapWrap.setPointerCapture(e.pointerId);
           document.body.classList.add('pin-dragging');
         });
       }
-    });
+    }));
 
     updateEmpty();
     updateCounter();
@@ -655,12 +679,16 @@
   btnAdd.addEventListener('click', () => toggleAddMode());
   $('#emptyAdd').addEventListener('click', () => toggleAddMode(true));
 
-  function clientToSvg(clientX, clientY) {
+  function clientToSvgRaw(clientX, clientY) {
     const rect = mapZoom.getBoundingClientRect();
     return {
       x: (clientX - rect.left) / rect.width  * MAP_W,
       y: (clientY - rect.top)  / rect.height * MAP_H,
     };
+  }
+  function clientToSvg(clientX, clientY) {
+    const p = clientToSvgRaw(clientX, clientY);
+    return { x: wrapX(p.x), y: p.y };
   }
 
   mapWrap.addEventListener('click', e => {
@@ -1020,11 +1048,11 @@
   //  Sequential pin flash — first at 2 s, then every 30 s
   // ============================================================
   function flashAllSequentially() {
-    const dots = [...pinsLayer.querySelectorAll('.pin-dot')];
-    dots.forEach((dot, i) => {
+    pins.forEach((pin, i) => {
       setTimeout(() => {
-        dot.classList.add('flashing');
-        setTimeout(() => dot.classList.remove('flashing'), 500);
+        const dots = pinsLayer.querySelectorAll(`.pin-group[data-id="${CSS.escape(pin.id)}"] .pin-dot`);
+        dots.forEach(dot => dot.classList.add('flashing'));
+        setTimeout(() => dots.forEach(dot => dot.classList.remove('flashing')), 500);
       }, i * 180);
     });
   }
