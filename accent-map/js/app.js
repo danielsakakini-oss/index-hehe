@@ -134,13 +134,13 @@
     return Math.min(mapWrap.clientWidth / MAP_W, mapWrap.clientHeight / MAP_H);
   }
 
-  function applyTransform() {
+  function applyTransform(opts = {}) {
     const f  = fitScale();
     const s  = f * ZOOM.level;
     const vw = mapWrap.clientWidth, vh = mapWrap.clientHeight;
     const sw = MAP_W * s, sh = MAP_H * s;
     // Shift by whole map widths so the view centre stays on the middle copy
-    ZOOM.tx += Math.floor((vw / 2 - ZOOM.tx) / sw) * sw;
+    if (!opts.noWrap) ZOOM.tx += Math.floor((vw / 2 - ZOOM.tx) / sw) * sw;
     if (sh <= vh) ZOOM.ty = (vh - sh) / 2;
     else ZOOM.ty = Math.max(vh - sh, Math.min(0, ZOOM.ty));
     mapZoom.style.transform = `translate(${ZOOM.tx}px, ${ZOOM.ty}px) scale(${s})`;
@@ -266,6 +266,7 @@
         // double-click (or modifier-click) on a pin here instead.
         const now = performance.now();
         const again = lastPinTap && lastPinTap.id === pinDrag.pin.id && now - lastPinTap.t < 400;
+        if (!again && !(e.altKey || e.ctrlKey || e.metaKey)) panToPin(pinDrag.pin, pinDrag.off);
         lastPinTap = { id: pinDrag.pin.id, t: now };
         if (again || e.altKey || e.ctrlKey || e.metaKey) {
           lastPinTap = null;
@@ -396,6 +397,7 @@
       // Fire pin if this was a clean tap
       if (touchTap) {
         onPinEnter(touchTap.pin, touchTap.el || pinsLayer);
+        panToPin(touchTap.pin, Number(touchTap.el?.dataset.off || 0));
         touchTap = null;
       }
       const wasMoved = drag?.moved;
@@ -600,6 +602,10 @@
 
       g.addEventListener('mouseenter', () => onPinEnter(realPin, g));
       g.addEventListener('mouseleave', () => onPinLeave(realPin, g));
+      g.addEventListener('click', () => {
+        if (document.body.classList.contains('add-mode')) return;
+        panToPin(realPin, off);
+      });
 
       if (isAdmin()) {
         g.addEventListener('pointerdown', e => {
@@ -988,6 +994,23 @@
   //  Bottom-left accent list
   // ============================================================
   const accentsItems = $('#accentsItems');
+
+  // Slide the clicked copy of a pin to the centre of the screen, keeping the
+  // current zoom. Wrapping is held off during the animation so it doesn't
+  // slide across a whole map width, then re-applied (invisibly) at the end.
+  let panTimer = null;
+  function panToPin(pin, off = 0) {
+    const s = fitScale() * ZOOM.level;
+    ZOOM.tx = mapWrap.clientWidth  / 2 - (pin.x + off) * s;
+    ZOOM.ty = mapWrap.clientHeight / 2 - pin.y * s;
+    mapZoom.classList.add('animating');
+    applyTransform({ noWrap: true });
+    clearTimeout(panTimer);
+    panTimer = setTimeout(() => {
+      mapZoom.classList.remove('animating');
+      applyTransform();
+    }, 240);
+  }
 
   function centerOnPin(pin) {
     const f = fitScale();
